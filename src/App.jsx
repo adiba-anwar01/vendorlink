@@ -1,0 +1,40 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import DashboardLayout from './components/layout/DashboardLayout';
+import Dashboard from './pages/Dashboard';
+import Products from './pages/Products';
+import AddProduct from './pages/AddProduct';
+import ProductDetails from './pages/ProductDetails';
+import Conversations from './pages/Conversations';
+import Orders from './pages/Orders';
+import Analytics from './pages/Analytics';
+import Profile from './pages/Profile';
+import MyOrders from './pages/MyOrders';
+import ExploreItems from './pages/ExploreItems';
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Redirect root → dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        {/* All vendor pages share the DashboardLayout */}
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/add" element={<AddProduct />} />
+          <Route path="/products/:id" element={<ProductDetails />} />
+          <Route path="/conversations" element={<Conversations />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/explore-items" element={<ExploreItems />} />
+        </Route>
+
+        {/* 404 fallback */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
