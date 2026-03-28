@@ -1,6 +1,7 @@
 import { Image, Edit2, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Badge from './Badge';
+import { formatPrice } from '../utils/priceUtils';
 
 export default function ProductCard({ product, onEdit, onDelete }) {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
           {product.title}
         </h3>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm font-bold text-gray-900">${product.price.toLocaleString()}</span>
+          <span className="text-sm font-bold text-gray-900">{formatPrice(product.price)}</span>
           <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
             {product.condition}
           </span>
@@ -45,24 +46,26 @@ export default function ProductCard({ product, onEdit, onDelete }) {
         <div className="flex flex-col gap-1 pt-2 border-t border-gray-100 mt-auto">
           <button
             onClick={() => navigate(`/products/${product.id}`)}
-            className="w-full flex items-center justify-center gap-1 text-[11px] font-medium
-              py-1 px-2 rounded-lg border border-gray-200 text-gray-600
-              hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            className="w-full btn-secondary text-[11px] py-1 px-2 rounded-lg
+              hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"
           >
-            <Eye className="w-3 h-3 shrink-0" /> View Details
+            <Eye className="w-3 h-3 shrink-0" />
+            <span>View Details</span>
           </button>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => navigate(`/products/${product.id}/edit`)}
-              className="flex-1 btn-secondary text-[11px] py-1 px-2 rounded-lg"
+              className="flex-1 flex items-center justify-center gap-1.5 btn-secondary text-[11px] py-1 px-2 rounded-lg"
             >
-              <Edit2 className="w-3 h-3 shrink-0" /> Edit
+              <Edit2 className="w-3 h-3 shrink-0" />
+              <span>Edit</span>
             </button>
             <button
               onClick={() => onDelete?.(product)}
-              className="flex-1 btn-danger text-[11px] py-1 px-2 rounded-lg"
+              className="flex-1 flex items-center justify-center gap-1.5 btn-danger text-[11px] py-1 px-2 rounded-lg"
             >
-              <Trash2 className="w-3 h-3 shrink-0" /> Delete
+              <Trash2 className="w-3 h-3 shrink-0" />
+              <span>Delete</span>
             </button>
           </div>
         </div>

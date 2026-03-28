@@ -49,7 +49,7 @@ export default function AddProduct() {
   });
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6">
       {/* Header */}
       <div>
         <button onClick={() => navigate('/products')} className="btn-ghost mb-3 -ml-2">
@@ -80,7 +80,7 @@ export default function AddProduct() {
 
         {/* Price + Category row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Price (USD)" error={errors.price}>
+          <Field label="Price (₹)" error={errors.price}>
             <input type="number" min="0" step="0.01" placeholder="0.00" className="input-field" {...field('price')} />
           </Field>
           <Field label="Category" error={errors.category}>

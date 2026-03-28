@@ -1,10 +1,11 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
-import { Search, ArrowUpDown, MapPin, Loader2, Navigation } from 'lucide-react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { ArrowUpDown, MapPin, Loader2, Navigation, Search } from 'lucide-react';
 import { userListings } from '../data/mockData';
 import UserItemCard from '../components/ui/UserItemCard';
 import MapErrorBoundary from '../components/ui/MapErrorBoundary';
 import useGeolocation from '../hooks/useGeolocation';
 import { getDistanceKm } from '../components/utils/geoUtils';
+import InputWithIcon from '../components/ui/InputWithIcon';
 
 // Lazy-load Leaflet so it doesn't block the initial render
 const ItemMap = lazy(() => import('../components/ui/ItemMap'));
@@ -62,7 +63,7 @@ export default function ExploreItems() {
   }, [listingsWithDist, activeCategory, search, distanceFilter, sortOrder, coords]);
 
   // Reset pagination if filters change
-  useMemo(() => setCurrentPage(1), [activeCategory, search, distanceFilter, sortOrder]);
+  useEffect(() => setCurrentPage(1), [activeCategory, search, distanceFilter, sortOrder]);
 
   // Derived pagination data
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
@@ -192,16 +193,12 @@ export default function ExploreItems() {
       </div>
 
       {/* ── Search bar ────────────────────────────────────────────────── */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search by title, category, or seller…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input-field pl-9"
-        />
-      </div>
+      <InputWithIcon
+        icon={Search}
+        placeholder="Search by title, category, or seller…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
       {/* ── Category filters (below search) ────────────────────────────── */}
       <div className="flex flex-wrap gap-2">
@@ -241,7 +238,7 @@ export default function ExploreItems() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 items-stretch">
             {paginatedItems.map((item) => (
               <div key={item.id} className="relative">
                 <UserItemCard item={item} />

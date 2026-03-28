@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Image, ShoppingCart, Eye } from 'lucide-react';
 import useMyOrdersStore from '../../store/useMyOrdersStore';
+import { formatPrice } from '../utils/priceUtils';
 
 export default function UserItemCard({ item }) {
   const placeOrder = useMyOrdersStore((s) => s.placeOrder);
@@ -60,7 +61,7 @@ export default function UserItemCard({ item }) {
         <p className="text-[11px] text-gray-400 mb-1 truncate">By {item.seller}</p>
 
         <span className="text-sm font-bold text-gray-900 mb-1">
-          ${item.price.toLocaleString()}
+          {formatPrice(item.price)}
         </span>
 
         {/* Success banner */}
@@ -75,17 +76,18 @@ export default function UserItemCard({ item }) {
         <div className="flex items-center gap-1.5 pt-2 border-t border-gray-100 mt-auto">
           <button
             onClick={() => navigate(`/explore-items/${item.id}`)}
-            className="flex-1 flex items-center justify-center gap-1 text-[11px] font-medium
-              py-1 px-2 rounded-lg border border-gray-200 text-gray-600
-              hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            className="flex-1 btn-secondary text-[11px] py-1 px-2 rounded-lg
+              hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"
           >
-            <Eye className="w-3 h-3 shrink-0" /> Details
+            <Eye className="w-3 h-3 shrink-0" />
+            <span>Details</span>
           </button>
           <button
             onClick={handlePlaceOrder}
-            className="flex-1 btn-primary text-[11px] py-1 px-2 rounded-lg"
+            className="flex-1 flex items-center justify-center gap-1.5 btn-primary text-[11px] py-1 px-2 rounded-lg"
           >
-            <ShoppingCart className="w-3 h-3 shrink-0" /> Order
+            <ShoppingCart className="w-3 h-3 shrink-0" />
+            <span>Order</span>
           </button>
         </div>
       </div>

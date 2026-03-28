@@ -1,5 +1,6 @@
 import useMyOrdersStore from '../store/useMyOrdersStore';
 import { ShoppingBag, Package, Clock } from 'lucide-react';
+import { formatPrice } from '../components/utils/priceUtils';
 
 const STATUS_COLORS = {
   Pending:   { bg: 'bg-amber-100',  text: 'text-amber-700'  },
@@ -69,15 +70,15 @@ export default function MyOrders() {
                   <p className="text-xs text-gray-400 mt-0.5">
                     Seller: {order.seller} · {order.category} · {order.condition}
                   </p>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <Clock className="w-3 h-3 text-gray-300" />
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <Clock className="w-3 h-3 text-gray-300 shrink-0" />
                     <span className="text-[11px] text-gray-400">{timeAgo(order.placedAt)}</span>
                   </div>
                 </div>
 
                 {/* Price + status */}
                 <div className="text-right shrink-0">
-                  <p className="text-base font-bold text-gray-900">${order.price.toLocaleString()}</p>
+                  <p className="text-base font-bold text-gray-900">{formatPrice(order.price)}</p>
                   <span className={`inline-block mt-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${sc.bg} ${sc.text}`}>
                     {order.status}
                   </span>

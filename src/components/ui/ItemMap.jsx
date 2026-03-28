@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { formatPrice } from '../utils/priceUtils';
 
 // Fix Leaflet default marker icon broken by Vite bundling
 delete L.Icon.Default.prototype._getIconUrl;
@@ -85,7 +86,7 @@ export default function ItemMap({ items, userCoords, distanceKm }) {
             <div style={{ minWidth: 160 }}>
               <img src={item.image} alt={item.title} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 6, marginBottom: 6 }} />
               <p style={{ fontWeight: 600, fontSize: 12, marginBottom: 2 }}>{item.title}</p>
-              <p style={{ color: '#3b82f6', fontWeight: 700, fontSize: 13 }}>${item.price.toLocaleString()}</p>
+              <p style={{ color: '#3b82f6', fontWeight: 700, fontSize: 13 }}>{formatPrice(item.price)}</p>
               <p style={{ color: '#71717a', fontSize: 11, marginTop: 2 }}>{item.category} · {item.condition}</p>
               <p style={{ color: '#a1a1aa', fontSize: 10, marginTop: 2 }}>Posted by {item.seller}</p>
             </div>

@@ -8,6 +8,7 @@ import { products, orders, conversations, userListings } from '../data/mockData'
 import Badge from '../components/ui/Badge';
 import UserItemCard from '../components/ui/UserItemCard';
 import { formatDistanceToNow } from '../components/utils/dateUtils';
+import { formatPrice } from '../components/utils/priceUtils';
 
 // Hero carousel slides (purely visual - CSS animation)
 const heroSlides = [
@@ -175,7 +176,7 @@ export default function Dashboard() {
             <p className="text-gray-400">No listings in this category yet.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 items-stretch">
             {filteredListings.map((item) => (
               <UserItemCard key={item.id} item={item} />
             ))}
@@ -214,7 +215,7 @@ export default function Dashboard() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 line-clamp-1">{item.title}</p>
                 <p className="text-xs text-gray-400">{item.category}</p>
-                <p className="text-sm font-bold text-blue-600 mt-0.5">${item.price.toLocaleString()}</p>
+                <p className="text-sm font-bold text-blue-600 mt-0.5">{formatPrice(item.price)}</p>
               </div>
             </div>
           ))}
@@ -274,7 +275,7 @@ export default function Dashboard() {
                   <p className="text-[11px] text-gray-400">{order.buyer_name}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-xs font-bold text-gray-900">${order.price}</p>
+                  <p className="text-xs font-bold text-gray-900">{formatPrice(order.price)}</p>
                   <Badge status={order.status} />
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Image, Tag, User, MapPin, Package } from 'lucide-react';
 import { userListings } from '../data/mockData';
 import useMyOrdersStore from '../store/useMyOrdersStore';
+import { formatPrice } from '../components/utils/priceUtils';
 
 export default function UserItemDetail() {
   const { id } = useParams();
@@ -45,7 +46,8 @@ export default function UserItemDetail() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Back */}
       <button onClick={() => navigate(-1)} className="btn-ghost flex items-center gap-2">
-        <ArrowLeft className="w-4 h-4 shrink-0" /> Back
+        <ArrowLeft className="w-4 h-4 shrink-0" />
+        <span>Back</span>
       </button>
 
       {/* Main layout: image left, details right */}
@@ -112,7 +114,7 @@ export default function UserItemDetail() {
                 {item.title}
               </h1>
               <p className="text-3xl font-bold text-gray-900">
-                ${item.price.toLocaleString()}
+                {formatPrice(item.price)}
               </p>
             </div>
 
@@ -156,11 +158,12 @@ export default function UserItemDetail() {
 
             {/* Actions */}
             <div className="flex gap-3 pt-2">
-              <button onClick={() => navigate(-1)} className="btn-secondary flex-1">
+              <button onClick={() => navigate(-1)} className="btn-secondary flex-1 flex items-center justify-center gap-2">
                 Go Back
               </button>
-              <button onClick={handlePlaceOrder} className="btn-primary flex-1">
-                <ShoppingCart className="w-4 h-4 shrink-0" /> Place Order
+              <button onClick={handlePlaceOrder} className="btn-primary flex-1 flex items-center justify-center gap-2">
+                <ShoppingCart className="w-4 h-4 shrink-0" />
+                <span>Place Order</span>
               </button>
             </div>
           </div>

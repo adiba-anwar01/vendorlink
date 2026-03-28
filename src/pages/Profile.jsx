@@ -2,16 +2,17 @@ import { useState } from 'react';
 import { User, Lock, Save, Eye, EyeOff, MapPin, Phone, Mail, Store } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 import Modal from '../components/ui/Modal';
+import InputWithIcon from '../components/ui/InputWithIcon';
 
 export default function Profile() {
   const { vendor, setVendor } = useAuthStore();
-  const [form, setForm]       = useState({ ...vendor });
-  const [saved, setSaved]     = useState(false);
+  const [form, setForm] = useState({ ...vendor });
+  const [saved, setSaved] = useState(false);
   const [pwModal, setPwModal] = useState(false);
 
-  const [pw, setPw]         = useState({ current: '', next: '', confirm: '' });
+  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
   const [showPw, setShowPw] = useState({});
-  const [pwError, setPwError]     = useState('');
+  const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
 
   const getInitials = (name) =>
@@ -30,8 +31,8 @@ export default function Profile() {
   });
 
   const handleChangePassword = () => {
-    if (!pw.current)            { setPwError('Enter your current password.'); return; }
-    if (pw.next.length < 8)     { setPwError('New password must be at least 8 characters.'); return; }
+    if (!pw.current) { setPwError('Enter your current password.'); return; }
+    if (pw.next.length < 8) { setPwError('New password must be at least 8 characters.'); return; }
     if (pw.next !== pw.confirm) { setPwError('Passwords do not match.'); return; }
     setPwError('');
     setPwSuccess(true);
@@ -41,7 +42,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6">
       {/* Profile hero */}
       <div className="card p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
         <div className="flex items-center gap-5">
@@ -53,11 +54,18 @@ export default function Profile() {
           <div>
             <h1 className="text-xl font-bold text-white">{vendor?.name}</h1>
             <p className="text-blue-100 text-sm mt-0.5 flex items-center gap-1.5">
-              <Store className="w-3.5 h-3.5" /> {vendor?.storeName}
+              <Store className="w-3.5 h-3.5 shrink-0" />
+              <span>{vendor?.storeName}</span>
             </p>
             <div className="flex items-center gap-3 mt-2 text-xs text-blue-200">
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{vendor?.location}</span>
-              <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{vendor?.phone}</span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3 h-3 shrink-0" />
+                <span>{vendor?.location}</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <Phone className="w-3 h-3 shrink-0" />
+                <span>{vendor?.phone}</span>
+              </span>
             </div>
           </div>
         </div>
@@ -84,41 +92,31 @@ export default function Profile() {
             <input type="text" className="input-field" {...field('name')} />
           </ProfileField>
           <ProfileField label="Email Address">
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="email" className="input-field pl-9" {...field('email')} />
-            </div>
+            <InputWithIcon icon={Mail} type="email" {...field('email')} />
           </ProfileField>
           <ProfileField label="Phone Number">
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="tel" className="input-field pl-9" {...field('phone')} />
-            </div>
+            <InputWithIcon icon={Phone} type="tel" {...field('phone')} />
           </ProfileField>
           <ProfileField label="Store Name">
-            <div className="relative">
-              <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" className="input-field pl-9" {...field('storeName')} />
-            </div>
+            <InputWithIcon icon={Store} {...field('storeName')} />
           </ProfileField>
           <ProfileField label="Location" className="sm:col-span-2">
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" className="input-field pl-9" {...field('location')} />
-            </div>
+            <InputWithIcon icon={MapPin} {...field('location')} />
           </ProfileField>
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="btn-primary flex-1 py-3">
-            <Save className="w-4 h-4" /> Update Profile
+          <button type="submit" className="btn-primary flex-1 py-3 flex items-center justify-center gap-2">
+            <Save className="w-4 h-4 shrink-0" />
+            <span>Update Profile</span>
           </button>
           <button
             type="button"
             onClick={() => setPwModal(true)}
-            className="btn-secondary"
+            className="btn-secondary flex items-center gap-2"
           >
-            <Lock className="w-4 h-4" /> Change Password
+            <Lock className="w-4 h-4 shrink-0" />
+            <span>Change Password</span>
           </button>
         </div>
       </form>

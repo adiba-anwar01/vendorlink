@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit2, CheckCircle, MapPin, Tag, RefreshCw, Eye, MessageSquare } from 'lucide-react';
 import useProductsStore from '../store/useProductsStore';
 import Badge from '../components/ui/Badge';
+import { formatPrice } from '../components/utils/priceUtils';
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -26,8 +27,9 @@ export default function ProductDetails() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/products')} className="btn-ghost">
-          <ArrowLeft className="w-4 h-4" /> Back
+        <button onClick={() => navigate('/products')} className="btn-ghost flex items-center gap-2">
+          <ArrowLeft className="w-4 h-4 shrink-0" />
+          <span>Back</span>
         </button>
         <div className="flex-1" />
         <Badge status={status} />
@@ -71,7 +73,7 @@ export default function ProductDetails() {
         <div className="space-y-5">
           <div className="card p-6 space-y-4">
             <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-snug">{product.title}</h1>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">${product.price.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatPrice(product.price)}</p>
 
             {/* Meta tags */}
             <div className="flex flex-wrap gap-2">
@@ -109,16 +111,18 @@ export default function ProductDetails() {
           <div className="flex gap-3">
             <button
               onClick={() => navigate(`/products/${id}/edit`)}
-              className="btn-secondary flex-1"
+              className="btn-secondary flex-1 flex items-center justify-center gap-2"
             >
-              <Edit2 className="w-4 h-4" /> Edit Product
+              <Edit2 className="w-4 h-4 shrink-0" />
+              <span>Edit Product</span>
             </button>
             {status === 'Active' && (
               <button
                 onClick={() => setStatus('Sold')}
-                className="btn-primary flex-1"
+                className="btn-primary flex-1 flex items-center justify-center gap-2"
               >
-                <CheckCircle className="w-4 h-4" /> Mark as Sold
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                <span>Mark as Sold</span>
               </button>
             )}
           </div>

@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
-import { Search, Send, Package, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+import { Send, Package, MessageSquare, Search } from 'lucide-react';
 import { conversations as initialConvs, buyers, products } from '../data/mockData';
 import ConversationListItem from '../components/conversations/ConversationListItem';
 import ChatMessageBubble from '../components/conversations/ChatMessageBubble';
 import useAuthStore from '../store/useAuthStore';
+import InputWithIcon from '../components/ui/InputWithIcon';
 
 export default function Conversations() {
   const { vendor } = useAuthStore();
@@ -11,11 +12,12 @@ export default function Conversations() {
   const [activeId, setActiveId] = useState(convs[0]?.conversation_id);
   const [search, setSearch]     = useState('');
   const [message, setMessage]   = useState('');
-  const messagesEndRef = useRef(null);
 
   const activeConv    = convs.find((c) => c.conversation_id === activeId);
   const activeBuyer   = buyers.find((b) => b.id === activeConv?.buyer_id);
   const activeProduct = products.find((p) => p.id === activeConv?.product_id);
+
+  const unreadCount = convs.filter((c) => c.unread > 0).length;
 
   const filtered = convs.filter((c) => {
     const buyer = buyers.find((b) => b.id === c.buyer_id);
@@ -53,22 +55,19 @@ export default function Conversations() {
           <div className="flex items-center gap-2 mb-3">
             <MessageSquare className="w-4 h-4 text-blue-500" />
             <h2 className="text-sm font-bold text-gray-900">Conversations</h2>
-            {convs.filter(c => c.unread > 0).length > 0 && (
+            {unreadCount > 0 && (
               <span className="ml-auto text-xs bg-blue-500 text-white font-semibold px-2 py-0.5 rounded-full">
-                {convs.filter(c => c.unread > 0).length} new
+                {unreadCount} new
               </span>
             )}
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search buyers…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="input-field pl-8 py-2 text-xs"
-            />
-          </div>
+          <InputWithIcon
+            icon={Search}
+            placeholder="Search buyers…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="text-xs"
+          />
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
           {filtered.map((conv) => (
@@ -115,7 +114,6 @@ export default function Conversations() {
                 isVendor={msg.sender_id === vendor.id}
               />
             ))}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Input */}

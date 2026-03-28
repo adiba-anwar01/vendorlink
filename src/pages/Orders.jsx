@@ -3,6 +3,8 @@ import { Search, Package2 } from 'lucide-react';
 import { orders as initialOrders } from '../data/mockData';
 import Badge from '../components/ui/Badge';
 import { formatDate } from '../components/utils/dateUtils';
+import { formatPrice } from '../components/utils/priceUtils';
+import InputWithIcon from '../components/ui/InputWithIcon';
 
 const STATUS_OPTIONS = ['Pending', 'Confirmed', 'Completed'];
 
@@ -49,7 +51,7 @@ export default function Orders() {
                 <Badge status={s} />
               </div>
               <p className="text-2xl font-bold text-gray-900">{count}</p>
-              <p className="text-xs text-gray-400 mt-0.5">${total.toLocaleString()} total value</p>
+              <p className="text-xs text-gray-400 mt-0.5">{formatPrice(total)} total value</p>
             </div>
           );
         })}
@@ -57,16 +59,13 @@ export default function Orders() {
 
       {/* Search + Filter */}
       <div className="card p-4 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by product or buyer…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input-field pl-9"
-          />
-        </div>
+        <InputWithIcon
+          icon={Search}
+          className="flex-1"
+          placeholder="Search by product or buyer…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
@@ -125,7 +124,7 @@ export default function Orders() {
                       </div>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="text-sm font-bold text-gray-900">${order.price.toLocaleString()}</p>
+                      <p className="text-sm font-bold text-gray-900">{formatPrice(order.price)}</p>
                     </td>
                     <td className="px-5 py-4">
                       <Badge status={order.status} />

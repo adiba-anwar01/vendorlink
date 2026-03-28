@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Package } from 'lucide-react';
 import { categories, conditions } from '../data/mockData';
@@ -31,7 +31,7 @@ export default function Products() {
   }, [products, search, filterCategory, filterCondition, filterStatus, priceMax]);
 
   // Reset to page 1 when filters change
-  useMemo(() => setCurrentPage(1), [search, filterCategory, filterCondition, filterStatus, priceMax]);
+  useEffect(() => setCurrentPage(1), [search, filterCategory, filterCondition, filterStatus, priceMax]);
 
   // Derived pagination data
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
@@ -101,7 +101,7 @@ export default function Products() {
             </select>
             <input
               type="number"
-              placeholder="Max $"
+              placeholder="Max ₹"
               value={priceMax}
               onChange={(e) => setPriceMax(e.target.value)}
               className="input-field w-24 text-sm"
@@ -126,7 +126,7 @@ export default function Products() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 items-stretch">
             {paginatedProducts.map((product) => (
               <ProductCard
                 key={product.id}

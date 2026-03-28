@@ -5,6 +5,7 @@ import {
 import { TrendingUp, Eye, MessageSquare, ShoppingBag } from 'lucide-react';
 import { monthlyOrders, productViews, inquiriesPerProduct, products, orders } from '../data/mockData';
 import StatCard from '../components/ui/StatCard';
+import { formatPrice } from '../components/utils/priceUtils';
 
 const BLUE   = '#3b82f6';
 const BLUE2  = '#60a5fa';
@@ -49,7 +50,7 @@ export default function Analytics() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard icon={ShoppingBag}   label="Total Revenue"    value={`$${totalRevenue.toLocaleString()}`} color="blue"  />
+        <StatCard icon={ShoppingBag}   label="Total Revenue"    value={formatPrice(totalRevenue)} color="blue"  />
         <StatCard icon={Eye}           label="Total Views"      value={totalViews}                           color="black" />
         <StatCard icon={MessageSquare} label="Total Inquiries"  value={totalInquiries}                       color="amber" />
         <StatCard icon={TrendingUp}    label="Conversion Rate"  value={`${((orders.length / totalViews) * 100).toFixed(1)}%`} color="green" />
@@ -65,7 +66,7 @@ export default function Analytics() {
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
             <Tooltip {...tooltipStyle} />
             <Line yAxisId="left"  type="monotone" dataKey="orders"  stroke={BLUE}  strokeWidth={2.5} dot={{ r: 4, fill: BLUE,  stroke: '#fff', strokeWidth: 2 }} name="Orders" />
-            <Line yAxisId="right" type="monotone" dataKey="revenue" stroke={GRAY}  strokeWidth={2}   dot={{ r: 4, fill: GRAY,  stroke: '#fff', strokeWidth: 2 }} name="Revenue ($)" strokeDasharray="5 3" />
+            <Line yAxisId="right" type="monotone" dataKey="revenue" stroke={GRAY}  strokeWidth={2}   dot={{ r: 4, fill: GRAY,  stroke: '#fff', strokeWidth: 2 }} name="Revenue (₹)" strokeDasharray="5 3" />
           </LineChart>
         </ResponsiveContainer>
       </ChartCard>

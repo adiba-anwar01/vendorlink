@@ -61,7 +61,7 @@ export default function EditProduct() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-xl mx-auto space-y-6">
       {/* Header */}
       <button onClick={() => navigate(`/products/${id}`)} className="btn-ghost flex items-center gap-2">
         <ArrowLeft className="w-4 h-4 shrink-0" /> Back to Details
@@ -89,7 +89,7 @@ export default function EditProduct() {
 
         {/* Price */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Price ($)</label>
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Price (₹)</label>
           <input type="number" min="0" step="0.01" className="input-field" required {...field('price')} />
         </div>
 
