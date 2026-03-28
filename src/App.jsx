@@ -4,12 +4,14 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import AddProduct from './pages/AddProduct';
 import ProductDetails from './pages/ProductDetails';
+import EditProduct from './pages/EditProduct';
 import Conversations from './pages/Conversations';
 import Orders from './pages/Orders';
 import Analytics from './pages/Analytics';
 import Profile from './pages/Profile';
 import MyOrders from './pages/MyOrders';
 import ExploreItems from './pages/ExploreItems';
+import UserItemDetail from './pages/UserItemDetail';
 
 export default function App() {
   return (
@@ -20,16 +22,18 @@ export default function App() {
 
         {/* All vendor pages share the DashboardLayout */}
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/products/add" element={<AddProduct />} />
-          <Route path="/products/:id" element={<ProductDetails />} />
-          <Route path="/conversations" element={<Conversations />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/explore-items" element={<ExploreItems />} />
+          <Route path="/dashboard"            element={<Dashboard />} />
+          <Route path="/products"             element={<Products />} />
+          <Route path="/products/add"         element={<AddProduct />} />
+          <Route path="/products/:id"         element={<ProductDetails />} />
+          <Route path="/products/:id/edit"    element={<EditProduct />} />
+          <Route path="/conversations"        element={<Conversations />} />
+          <Route path="/orders"               element={<Orders />} />
+          <Route path="/my-orders"            element={<MyOrders />} />
+          <Route path="/analytics"            element={<Analytics />} />
+          <Route path="/profile"              element={<Profile />} />
+          <Route path="/explore-items"        element={<ExploreItems />} />
+          <Route path="/explore-items/:id"    element={<UserItemDetail />} />
         </Route>
 
         {/* 404 fallback */}
@@ -38,3 +42,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+

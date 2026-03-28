@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Search, Send, Package, MessageSquare } from 'lucide-react';
 import { conversations as initialConvs, buyers, products } from '../data/mockData';
 import ConversationListItem from '../components/conversations/ConversationListItem';
@@ -11,7 +11,7 @@ export default function Conversations() {
   const [activeId, setActiveId] = useState(convs[0]?.conversation_id);
   const [search, setSearch]     = useState('');
   const [message, setMessage]   = useState('');
-  const messagesEndRef           = useRef(null);
+  const messagesEndRef = useRef(null);
 
   const activeConv    = convs.find((c) => c.conversation_id === activeId);
   const activeBuyer   = buyers.find((b) => b.id === activeConv?.buyer_id);
@@ -21,10 +21,6 @@ export default function Conversations() {
     const buyer = buyers.find((b) => b.id === c.buyer_id);
     return buyer?.name.toLowerCase().includes(search.toLowerCase());
   });
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeConv?.messages]);
 
   const sendMessage = () => {
     if (!message.trim() || !activeConv) return;

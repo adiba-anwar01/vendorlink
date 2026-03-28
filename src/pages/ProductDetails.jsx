@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit2, CheckCircle, MapPin, Tag, RefreshCw, Eye, MessageSquare } from 'lucide-react';
-import { products } from '../data/mockData';
+import useProductsStore from '../store/useProductsStore';
 import Badge from '../components/ui/Badge';
 
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const products = useProductsStore((s) => s.products);
   const product = products.find((p) => p.id === id);
 
   const [activeImg, setActiveImg] = useState(0);
@@ -106,7 +107,10 @@ export default function ProductDetails() {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <button className="btn-secondary flex-1">
+            <button
+              onClick={() => navigate(`/products/${id}/edit`)}
+              className="btn-secondary flex-1"
+            >
               <Edit2 className="w-4 h-4" /> Edit Product
             </button>
             {status === 'Active' && (

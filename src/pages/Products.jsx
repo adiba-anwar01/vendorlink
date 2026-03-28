@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Package } from 'lucide-react';
-import { products as initialProducts, categories, conditions } from '../data/mockData';
+import { categories, conditions } from '../data/mockData';
+import useProductsStore from '../store/useProductsStore';
 import ProductCard from '../components/ui/ProductCard';
 import Modal from '../components/ui/Modal';
 
 export default function Products() {
-  const [products, setProducts] = useState(initialProducts);
+  const { products, deleteProduct } = useProductsStore();
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterCondition, setFilterCondition] = useState('All');
@@ -40,7 +41,7 @@ export default function Products() {
   );
 
   const handleDelete = () => {
-    setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+    deleteProduct(deleteTarget.id);
     setDeleteTarget(null);
   };
 
@@ -125,7 +126,7 @@ export default function Products() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-stretch">
             {paginatedProducts.map((product) => (
               <ProductCard
                 key={product.id}
