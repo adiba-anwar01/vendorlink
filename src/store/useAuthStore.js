@@ -1,18 +1,33 @@
 import { create } from 'zustand';
 
+// Read persisted session from localStorage on first load
+const storedVendor = (() => {
+  try { return JSON.parse(localStorage.getItem('vendor')); } catch { return null; }
+})();
+
 const useAuthStore = create((set) => ({
-  vendor: {
-    id: 'vendor_001',
-    name: 'Alex Johnson',
-    email: 'alex@vendorlink.com',
-    phone: '+1 (555) 234-5678',
-    storeName: 'Alex\'s Premium Store',
-    location: 'New York, NY',
-    avatar: null,
+  vendor: storedVendor,
+  isAuthenticated: !!localStorage.getItem('token'),
+
+  // Call this after a successful login API response
+  login: (token, user) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('vendor', JSON.stringify(user));
+    set({ vendor: user, isAuthenticated: true });
   },
-  isAuthenticated: true,
-  setVendor: (vendor) => set({ vendor }),
-  logout: () => set({ isAuthenticated: false, vendor: null }),
+
+  // Update vendor profile fields in state (and localStorage)
+  setVendor: (vendor) => {
+    localStorage.setItem('vendor', JSON.stringify(vendor));
+    set({ vendor });
+  },
+
+  // Clear session — Navbar logout calls this
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('vendor');
+    set({ vendor: null, isAuthenticated: false });
+  },
 }));
 
 export default useAuthStore;

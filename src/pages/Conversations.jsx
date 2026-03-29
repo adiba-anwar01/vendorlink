@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Send, Package, MessageSquare, Search } from 'lucide-react';
-import { conversations as initialConvs, buyers, products } from '../data/mockData';
+import { conversations as initialConvs, buyers } from '../data/mockData';
 import ConversationListItem from '../components/conversations/ConversationListItem';
 import ChatMessageBubble from '../components/conversations/ChatMessageBubble';
 import useAuthStore from '../store/useAuthStore';
@@ -15,7 +15,7 @@ export default function Conversations() {
 
   const activeConv    = convs.find((c) => c.conversation_id === activeId);
   const activeBuyer   = buyers.find((b) => b.id === activeConv?.buyer_id);
-  const activeProduct = products.find((p) => p.id === activeConv?.product_id);
+  const activeProductTitle = activeConv?.product_id || 'Unknown Product';
 
   const unreadCount = convs.filter((c) => c.unread > 0).length;
 
@@ -74,6 +74,7 @@ export default function Conversations() {
             <ConversationListItem
               key={conv.conversation_id}
               conversation={conv}
+              productTitle={conv.product_id}
               isActive={conv.conversation_id === activeId}
               onClick={() => setActiveId(conv.conversation_id)}
             />
@@ -93,16 +94,9 @@ export default function Conversations() {
               <p className="text-sm font-bold text-gray-900">{activeBuyer?.name}</p>
               <div className="flex items-center gap-1 text-gray-400">
                 <Package className="w-3 h-3" />
-                <span className="text-xs truncate">{activeProduct?.title}</span>
+                <span className="text-xs truncate">{activeProductTitle}</span>
               </div>
             </div>
-            {activeProduct?.images?.[0] && (
-              <img
-                src={activeProduct.images[0]}
-                alt=""
-                className="w-10 h-10 rounded-xl object-cover shrink-0 border-2 border-white shadow-sm"
-              />
-            )}
           </div>
 
           {/* Messages */}

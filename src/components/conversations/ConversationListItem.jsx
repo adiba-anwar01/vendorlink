@@ -1,11 +1,9 @@
 import { formatDistanceToNow } from '../utils/dateUtils';
 import { Package } from 'lucide-react';
-import { products } from '../../data/mockData';
 import { buyers } from '../../data/mockData';
 
-export default function ConversationListItem({ conversation, isActive, onClick }) {
+export default function ConversationListItem({ conversation, productTitle, isActive, onClick }) {
   const buyer   = buyers.find((b) => b.id === conversation.buyer_id);
-  const product = products.find((p) => p.id === conversation.product_id);
 
   return (
     <button
@@ -36,7 +34,7 @@ export default function ConversationListItem({ conversation, isActive, onClick }
         {/* Product reference */}
         <div className={`flex items-center gap-1 mt-0.5 ${isActive ? 'text-white/70 dark:text-gray-700' : 'text-gray-400'}`}>
           <Package className="w-2.5 h-2.5 shrink-0" />
-          <span className="text-[10px] truncate">{product?.title}</span>
+          <span className="text-[10px] truncate">{productTitle}</span>
         </div>
         {/* Last message */}
         <p className={`text-xs mt-0.5 truncate ${isActive ? 'text-white/80 dark:text-gray-800' : 'text-gray-500 dark:text-gray-400'}`}>

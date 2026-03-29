@@ -52,11 +52,11 @@ export default function Profile() {
             </span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">{vendor?.name}</h1>
-            <p className="text-blue-100 text-sm mt-0.5 flex items-center gap-1.5">
-              <Store className="w-3.5 h-3.5 shrink-0" />
-              <span>{vendor?.storeName}</span>
-            </p>
+            <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              <Store className="w-5 h-5 shrink-0" />
+              {vendor?.name}
+            </h1>
+            <p className="text-blue-100 text-sm mt-0.5">{vendor?.email}</p>
             <div className="flex items-center gap-3 mt-2 text-xs text-blue-200">
               <span className="flex items-center gap-1">
                 <MapPin className="w-3 h-3 shrink-0" />
@@ -88,17 +88,14 @@ export default function Profile() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ProfileField label="Vendor Name">
-            <input type="text" className="input-field" {...field('name')} />
+          <ProfileField label="Store Name" className="sm:col-span-2">
+            <InputWithIcon icon={Store} {...field('name')} />
           </ProfileField>
           <ProfileField label="Email Address">
             <InputWithIcon icon={Mail} type="email" {...field('email')} />
           </ProfileField>
           <ProfileField label="Phone Number">
             <InputWithIcon icon={Phone} type="tel" {...field('phone')} />
-          </ProfileField>
-          <ProfileField label="Store Name">
-            <InputWithIcon icon={Store} {...field('storeName')} />
           </ProfileField>
           <ProfileField label="Location" className="sm:col-span-2">
             <InputWithIcon icon={MapPin} {...field('location')} />

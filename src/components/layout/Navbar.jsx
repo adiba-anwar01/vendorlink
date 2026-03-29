@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import {
   Bell, ChevronDown, User, LogOut, Store, Menu, X,
   LayoutDashboard, Package, ShoppingBag, MessageSquare, BarChart2, Compass,
@@ -32,9 +33,15 @@ const getInitials = (name) =>
   name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'VL';
 
 export default function Navbar() {
-  const { vendor } = useAuthStore();
+  const { vendor, logout, isAuthenticated } = useAuthStore();
   const navigate   = useNavigate();
   const location   = useLocation();
+
+  const handleLogout = () => {
+    logout();
+    toast.info('Logged out successfully.');
+    navigate('/login', { replace: true });
+  };
   const [dropOpen,    setDropOpen]    = useState(false);
   const [notifOpen,   setNotifOpen]   = useState(false);
   const [mobileOpen,  setMobileOpen]  = useState(false);
@@ -143,105 +150,118 @@ export default function Navbar() {
           {/* Right Side */}
           <div className="flex items-center gap-2 shrink-0">
 
-            {/* Notifications */}
-            <div className="relative" ref={notifRef}>
-              <button
-                onClick={() => { setNotifOpen((v) => !v); setDropOpen(false); }}
-                className="relative p-2 rounded-xl hover:bg-blue-50 transition-colors"
-              >
-                <Bell className="w-5 h-5 text-gray-500" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
-                )}
-              </button>
-
-              {notifOpen && (
-                <div
-                  className="absolute right-0 top-14 w-80 card shadow-xl z-50 animate-slide-down overflow-hidden"
-                  style={{ border: '1px solid #e4e4e7' }}
-                >
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-900">Notifications</p>
+            {isAuthenticated ? (
+              <>
+                {/* Notifications */}
+                <div className="relative" ref={notifRef}>
+                  <button
+                    onClick={() => { setNotifOpen((v) => !v); setDropOpen(false); }}
+                    className="relative p-2 rounded-xl hover:bg-blue-50 transition-colors"
+                  >
+                    <Bell className="w-5 h-5 text-gray-500" />
                     {unreadCount > 0 && (
-                      <span className="text-xs bg-blue-100 text-blue-600 font-semibold px-2 py-0.5 rounded-full">
-                        {unreadCount} new
-                      </span>
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
                     )}
-                  </div>
-                  <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto scrollbar-thin">
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className={`px-4 py-3 cursor-pointer transition-colors hover:bg-blue-50 ${
-                          n.unread ? 'bg-blue-50/60' : ''
-                        }`}
-                      >
-                        <div className="flex gap-3">
-                          <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                            n.unread ? 'bg-blue-500' : 'bg-gray-300'
-                          }`} />
-                          <div>
-                            <p className={`text-xs leading-relaxed ${
-                              n.unread ? 'text-gray-900 font-medium' : 'text-gray-500'
-                            }`}>
-                              {n.text}
-                            </p>
-                            <p className="text-[11px] text-gray-400 mt-0.5">{n.time}</p>
-                          </div>
-                        </div>
+                  </button>
+
+                  {notifOpen && (
+                    <div
+                      className="absolute right-0 top-14 w-80 card shadow-xl z-50 animate-slide-down overflow-hidden"
+                      style={{ border: '1px solid #e4e4e7' }}
+                    >
+                      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                        <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                        {unreadCount > 0 && (
+                          <span className="text-xs bg-blue-100 text-blue-600 font-semibold px-2 py-0.5 rounded-full">
+                            {unreadCount} new
+                          </span>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                      <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto scrollbar-thin">
+                        {notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={`px-4 py-3 cursor-pointer transition-colors hover:bg-blue-50 ${
+                              n.unread ? 'bg-blue-50/60' : ''
+                            }`}
+                          >
+                            <div className="flex gap-3">
+                              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                                n.unread ? 'bg-blue-500' : 'bg-gray-300'
+                              }`} />
+                              <div>
+                                <p className={`text-xs leading-relaxed ${
+                                  n.unread ? 'text-gray-900 font-medium' : 'text-gray-500'
+                                }`}>
+                                  {n.text}
+                                </p>
+                                <p className="text-[11px] text-gray-400 mt-0.5">{n.time}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Profile Dropdown */}
-            <div className="relative" ref={dropRef}>
+                {/* Profile Dropdown */}
+                <div className="relative" ref={dropRef}>
+                  <button
+                    onClick={() => { setDropOpen((v) => !v); setNotifOpen(false); }}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-blue-50 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
+                      <span className="text-[11px] font-bold text-white">
+                        {getInitials(vendor?.name)}
+                      </span>
+                    </div>
+                    <div className="hidden sm:block text-left">
+                      <p className="text-sm font-semibold text-gray-800 leading-tight">
+                        {vendor?.name?.split(' ')[0]}
+                      </p>
+                      <p className="text-[10px] text-gray-400 leading-tight">Store</p>
+                    </div>
+                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${dropOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {dropOpen && (
+                    <div
+                      className="absolute right-0 top-14 w-52 card shadow-xl z-50 animate-slide-down overflow-hidden"
+                      style={{ border: '1px solid #e4e4e7' }}
+                    >
+                      {/* User info header */}
+                      <div className="px-4 py-3 bg-gradient-to-br from-blue-50 to-white border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{vendor?.name}</p>
+                        <p className="text-xs text-gray-400 truncate">{vendor?.email}</p>
+                      </div>
+                      <div className="p-1.5">
+                        <DropItem
+                          icon={User}
+                          label="Profile"
+                          onClick={() => { navigate('/profile'); setDropOpen(false); }}
+                        />
+                        <DropItem
+                          icon={LogOut}
+                          label="Logout"
+                          onClick={handleLogout}
+                          danger
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Login button — shown when no vendor session exists */
               <button
-                onClick={() => { setDropOpen((v) => !v); setNotifOpen(false); }}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-blue-50 transition-colors"
+                onClick={() => navigate('/login')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-xl hover:bg-blue-600 transition-colors"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-sm">
-                  <span className="text-[11px] font-bold text-white">
-                    {getInitials(vendor?.name)}
-                  </span>
-                </div>
-                <div className="hidden sm:block text-left">
-                  <p className="text-sm font-semibold text-gray-800 leading-tight">
-                    {vendor?.name?.split(' ')[0]}
-                  </p>
-                  <p className="text-[10px] text-gray-400 leading-tight">Vendor</p>
-                </div>
-                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${dropOpen ? 'rotate-180' : ''}`} />
+                <User className="w-4 h-4" />
+                Login
               </button>
-
-              {dropOpen && (
-                <div
-                  className="absolute right-0 top-14 w-52 card shadow-xl z-50 animate-slide-down overflow-hidden"
-                  style={{ border: '1px solid #e4e4e7' }}
-                >
-                  {/* User info header */}
-                  <div className="px-4 py-3 bg-gradient-to-br from-blue-50 to-white border-b border-gray-100">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{vendor?.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{vendor?.email}</p>
-                  </div>
-                  <div className="p-1.5">
-                    <DropItem
-                      icon={User}
-                      label="Profile"
-                      onClick={() => { navigate('/profile'); setDropOpen(false); }}
-                    />
-                    <DropItem
-                      icon={LogOut}
-                      label="Logout"
-                      onClick={() => setDropOpen(false)}
-                      danger
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
 
             {/* Mobile hamburger */}
             <button

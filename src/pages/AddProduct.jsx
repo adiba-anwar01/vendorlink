@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { categories, conditions } from '../data/mockData';
+import { createProduct } from '../api/productApi';
+import useProductsStore from '../store/useProductsStore';
 import ImageUploader from '../components/ui/ImageUploader';
 
 const INITIAL_FORM = {
-  title: '', description: '', price: '', category: '', condition: 'New', location: '',
+  title: '', description: '', price: '', category: '', condition: 'New',
 };
 
 export default function AddProduct() {
   const navigate = useNavigate();
-  const [form, setForm]     = useState(INITIAL_FORM);
-  const [images, setImages] = useState([]);
-  const [errors, setErrors] = useState({});
+  const addProduct = useProductsStore((s) => s.addProduct);
+  const [form, setForm]       = useState(INITIAL_FORM);
+  const [images, setImages]   = useState([]);
+  const [errors, setErrors]   = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const validate = () => {
     const e = {};
@@ -22,22 +25,33 @@ export default function AddProduct() {
     if (!form.description.trim()) e.description = 'Description is required';
     if (!form.price || isNaN(form.price) || Number(form.price) <= 0) e.price = 'Enter a valid price';
     if (!form.category)           e.category    = 'Select a category';
-    if (!form.location.trim())    e.location    = 'Location is required';
     return e;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
 
-    setSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
+    const payload = {
+      title:       form.title.trim(),
+      description: form.description.trim(),
+      price:       Number(form.price),
+      category:    form.category,
+      condition:   form.condition.toLowerCase(), // backend enum: 'new' | 'used'
+    };
+
+    try {
+      setSubmitting(true);
+      const res = await createProduct(payload);
+      addProduct(res.data);
+      toast.success('Product published successfully!');
+      navigate('/products');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to publish product.');
+    } finally {
       setSubmitting(false);
-      setSuccess(true);
-      setTimeout(() => navigate('/products'), 1500);
-    }, 800);
+    }
   };
 
   const field = (name) => ({
@@ -58,14 +72,6 @@ export default function AddProduct() {
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">Add New Product</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Fill in the details to publish your listing.</p>
       </div>
-
-      {success && (
-        <div className="card p-4 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20">
-          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-            ✓ Product published successfully! Redirecting…
-          </p>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-5 card p-6">
         {/* Title */}
@@ -91,27 +97,22 @@ export default function AddProduct() {
           </Field>
         </div>
 
-        {/* Condition + Location row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Condition">
-            <div className="flex gap-3">
-              {conditions.map((c) => (
-                <label key={c} className={`flex items-center gap-2 flex-1 cursor-pointer px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
-                  form.condition === c
-                    ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-400'
-                }`}>
-                  <input type="radio" name="condition" value={c} checked={form.condition === c}
-                    onChange={() => setForm((f) => ({ ...f, condition: c }))} className="hidden" />
-                  {c}
-                </label>
-              ))}
-            </div>
-          </Field>
-          <Field label="Location" error={errors.location}>
-            <input type="text" placeholder="e.g. New York, NY" className="input-field" {...field('location')} />
-          </Field>
-        </div>
+        {/* Condition */}
+        <Field label="Condition">
+          <div className="flex gap-3">
+            {conditions.map((c) => (
+              <label key={c} className={`flex items-center gap-2 flex-1 cursor-pointer px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
+                form.condition === c
+                  ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900'
+                  : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-400'
+              }`}>
+                <input type="radio" name="condition" value={c} checked={form.condition === c}
+                  onChange={() => setForm((f) => ({ ...f, condition: c }))} className="hidden" />
+                {c}
+              </label>
+            ))}
+          </div>
+        </Field>
 
         {/* Image Upload */}
         <Field label={`Product Images ${images.length > 0 ? `(${images.length})` : ''}`}>

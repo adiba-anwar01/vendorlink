@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import {
   MessageSquare, ShoppingBag,
-  Clock, ArrowRight, TrendingUp, ArrowUpDown,
+  Clock, ArrowRight, ArrowUpDown,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { products, orders, conversations, userListings } from '../data/mockData';
+import { orders, conversations, userListings } from '../data/mockData';
 import Badge from '../components/ui/Badge';
 import UserItemCard from '../components/ui/UserItemCard';
 import { formatDistanceToNow } from '../components/utils/dateUtils';
@@ -44,7 +44,6 @@ export default function Dashboard() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [sortOrder, setSortOrder] = useState('newest');
 
-  const activeProducts = products.filter((p) => p.status === 'Active').length;
 
   // Recent activity: merge last messages + last orders
   const recentActivity = [
@@ -284,39 +283,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Top Products ────────────────────────────────────────────────── */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-blue-500 " /> Top Products by Views
-          </h2>
-          <Link to="/products" className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">
-            View all
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {[...products].sort((a, b) => b.views - a.views).slice(0, 4).map((p) => (
-            <div key={p.id} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                {p.images?.[0] && <img src={p.images[0]} alt="" className="w-full h-full object-cover" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{p.title}</p>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full transition-all duration-700"
-                      style={{ width: `${Math.round((p.views / 305) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="text-[11px] text-gray-400 shrink-0">{p.views} views</span>
-                </div>
-              </div>
-              <Badge status={p.status} />
-            </div>
-          ))}
-        </div>
-      </div>
 
     </div>
   );

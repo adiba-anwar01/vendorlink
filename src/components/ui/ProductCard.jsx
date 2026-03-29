@@ -45,7 +45,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
         {/* Actions — always at bottom */}
         <div className="flex flex-col gap-1 pt-2 border-t border-gray-100 mt-auto">
           <button
-            onClick={() => navigate(`/products/${product.id}`)}
+            onClick={() => navigate(`/products/${product._id ?? product.id}`)}
             className="w-full btn-secondary text-[11px] py-1 px-2 rounded-lg
               hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"
           >
@@ -54,7 +54,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
           </button>
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => navigate(`/products/${product.id}/edit`)}
+              onClick={() => navigate(`/products/${product._id ?? product.id}/edit`)}
               className="flex-1 flex items-center justify-center gap-1.5 btn-secondary text-[11px] py-1 px-2 rounded-lg"
             >
               <Edit2 className="w-3 h-3 shrink-0" />

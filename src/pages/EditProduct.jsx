@@ -1,85 +1,121 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, CheckCircle, X, Plus } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { getProduct, updateProduct as apiUpdateProduct } from '../api/productApi';
 import useProductsStore from '../store/useProductsStore';
+import ImageUploader from '../components/ui/ImageUploader';
 
 const CONDITIONS = ['New', 'Used'];
+
+// Read a File object and return a base64 data URL string
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Convert the ImageUploader image list → plain URL strings for the API.
+// Existing images (no file object) keep their URL; new uploads are base64-encoded.
+async function serializeImages(images) {
+  return Promise.all(
+    images.map((img) =>
+      img.file ? fileToBase64(img.file) : Promise.resolve(img.url)
+    )
+  );
+}
 
 export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, updateProduct } = useProductsStore();
-  const product = products.find((p) => p.id === id);
+  const updateProduct = useProductsStore((s) => s.updateProduct);
 
-  const [form, setForm] = useState({
-    title: product?.title ?? '',
-    price: product?.price ?? '',
-    description: product?.description ?? '',
-    condition: product?.condition ?? 'Used',
-  });
+  const [product, setProduct]   = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [form, setForm] = useState({ title: '', price: '', description: '', category: '', condition: 'Used' });
+  const [images, setImages]     = useState([]); // ImageUploader format: { id, file, url }
+  const [submitting, setSubmitting] = useState(false);
 
-  // Images — start with a copy of existing product images
-  const [images, setImages] = useState([...(product?.images ?? [])]);
-  const [newImageUrl, setNewImageUrl] = useState('');
-  const [saved, setSaved] = useState(false);
-
-  if (!product) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <p className="text-gray-500">Product not found.</p>
-        <button onClick={() => navigate('/products')} className="btn-primary">
-          Back to Products
-        </button>
-      </div>
-    );
-  }
+  // Fetch product from backend and seed form + image uploader
+  useEffect(() => {
+    getProduct(id)
+      .then((res) => {
+        const p = res.data;
+        setProduct(p);
+        setForm({
+          title:       p.title       ?? '',
+          price:       p.price       ?? '',
+          description: p.description ?? '',
+          category:    p.category    ?? '',
+          condition:   p.condition   ?? 'Used',
+        });
+        // Convert existing backend URL strings into the shape ImageUploader expects
+        const existingImages = (p.images ?? []).map((url, i) => ({
+          id:  `existing-${i}`,
+          file: null, // no File object — this is an already-uploaded image
+          url,
+        }));
+        setImages(existingImages);
+      })
+      .catch(() => toast.error('Failed to load product.'))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const field = (name) => ({
     value: form[name],
     onChange: (e) => setForm((f) => ({ ...f, [name]: e.target.value })),
   });
 
-  function addImage() {
-    const url = newImageUrl.trim();
-    if (!url) return;
-    setImages((prev) => [...prev, url]);
-    setNewImageUrl('');
-  }
-
-  function removeImage(idx) {
-    setImages((prev) => prev.filter((_, i) => i !== idx));
-  }
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    updateProduct({ ...product, ...form, price: Number(form.price), images });
-    setSaved(true);
-    setTimeout(() => {
-      setSaved(false);
+    try {
+      setSubmitting(true);
+      const payload = {
+        title:       form.title,
+        description: form.description,
+        price:       Number(form.price),
+        category:    form.category,
+        condition:   form.condition.toLowerCase(), // backend enum: 'new' | 'used'
+      };
+      const res = await apiUpdateProduct(id, payload);
+      updateProduct(res.data);
+      toast.success('Product updated successfully!');
       navigate(`/products/${id}`);
-    }, 1200);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update product.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-gray-400 animate-pulse">Loading product…</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <p className="text-gray-500">Product not found.</p>
+        <button onClick={() => navigate('/products')} className="btn-primary">Back to Products</button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      {/* Header */}
       <button onClick={() => navigate(`/products/${id}`)} className="btn-ghost flex items-center gap-2">
         <ArrowLeft className="w-4 h-4 shrink-0" /> Back to Details
       </button>
 
-      {/* Success banner */}
-      {saved && (
-        <div className="card p-4 bg-emerald-50 border-l-4 border-emerald-400 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-          <p className="text-sm font-semibold text-emerald-700">Product updated! Redirecting…</p>
-        </div>
-      )}
-
-      {/* Form */}
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
-        <h1 className="text-base font-bold text-gray-900 pb-3 border-b border-gray-100">
-          Edit Product
-        </h1>
+        <h1 className="text-base font-bold text-gray-900 pb-3 border-b border-gray-100">Edit Product</h1>
 
         {/* Title */}
         <div className="space-y-1.5">
@@ -107,47 +143,12 @@ export default function EditProduct() {
           <textarea rows={4} className="input-field resize-none" {...field('description')} />
         </div>
 
-        {/* ── Images ── */}
-        <div className="space-y-3">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Images</label>
-
-          {/* Existing images thumbnails */}
-          {images.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {images.map((img, i) => (
-                <div key={i} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-gray-200">
-                  <img src={img} alt={`img-${i}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(i)}
-                    className="absolute inset-0 bg-black/50 invisible group-hover:visible
-                      flex items-center justify-center transition-all"
-                  >
-                    <X className="w-5 h-5 text-white" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Add new image by URL */}
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              placeholder="Paste image URL…"
-              className="input-field flex-1 text-sm"
-            />
-            <button
-              type="button"
-              onClick={addImage}
-              className="btn-secondary shrink-0 px-3 py-2"
-            >
-              <Plus className="w-4 h-4 shrink-0" /> Add
-            </button>
-          </div>
-          <p className="text-[11px] text-gray-400">Hover over an existing image and click × to remove it.</p>
+        {/* Images — same drag & drop uploader as Add Product */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Product Images {images.length > 0 ? `(${images.length})` : ''}
+          </label>
+          <ImageUploader value={images} onChange={setImages} />
         </div>
 
         {/* Actions */}
@@ -155,9 +156,9 @@ export default function EditProduct() {
           <button type="button" onClick={() => navigate(`/products/${id}`)} className="btn-secondary flex-1">
             Cancel
           </button>
-          <button type="submit" className="btn-primary flex-1" disabled={saved}>
+          <button type="submit" className="btn-primary flex-1" disabled={submitting}>
             <Save className="w-4 h-4 shrink-0" />
-            {saved ? 'Saving…' : 'Save Changes'}
+            {submitting ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </form>

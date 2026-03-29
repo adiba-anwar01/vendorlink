@@ -1,31 +1,44 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Package } from 'lucide-react';
-import { categories, conditions } from '../data/mockData';
+import { toast } from 'react-toastify';
+import { categories } from '../data/mockData';
 import useProductsStore from '../store/useProductsStore';
+import { deleteProduct as apiDeleteProduct } from '../api/productApi';
 import ProductCard from '../components/ui/ProductCard';
 import Modal from '../components/ui/Modal';
 
 export default function Products() {
-  const { products, deleteProduct } = useProductsStore();
+  const { products, loading, error, fetchProducts, deleteProduct } = useProductsStore();
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterCondition, setFilterCondition] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [priceMax, setPriceMax] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
+  // Initial fetch on mount
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+
+  // Re-fetch from backend whenever condition filter changes
+  useEffect(() => {
+    fetchProducts(filterCondition);
+  }, [filterCondition, fetchProducts]);
+
   const filtered = useMemo(() => {
     return products.filter((p) => {
-      const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
-      const matchCategory = filterCategory === 'All' || p.category === filterCategory;
+      const matchSearch    = p.title.toLowerCase().includes(search.toLowerCase());
+      const matchCategory  = filterCategory  === 'All' || p.category  === filterCategory;
+      // Backend already filters by condition, but we keep this as a safe client-side guard.
+      // p.condition from backend is lowercase ('new' / 'used'); filterCondition is also lowercase.
       const matchCondition = filterCondition === 'All' || p.condition === filterCondition;
-      const matchStatus = filterStatus === 'All' || p.status === filterStatus;
-      const matchPrice = !priceMax || p.price <= Number(priceMax);
+      const matchStatus    = filterStatus    === 'All' || p.status    === filterStatus;
+      const matchPrice     = !priceMax || p.price <= Number(priceMax);
       return matchSearch && matchCategory && matchCondition && matchStatus && matchPrice;
     });
   }, [products, search, filterCategory, filterCondition, filterStatus, priceMax]);
@@ -33,17 +46,43 @@ export default function Products() {
   // Reset to page 1 when filters change
   useEffect(() => setCurrentPage(1), [search, filterCategory, filterCondition, filterStatus, priceMax]);
 
-  // Derived pagination data
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
   const paginatedProducts = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleDelete = () => {
-    deleteProduct(deleteTarget.id);
-    setDeleteTarget(null);
+  const handleDelete = async () => {
+    const id = deleteTarget._id ?? deleteTarget.id;
+    setDeleting(true);
+    try {
+      await apiDeleteProduct(id);
+      deleteProduct(id);
+      toast.success('Product deleted.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete product.');
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-gray-400 animate-pulse">Loading products…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card p-8 text-center">
+        <p className="text-sm text-red-500 font-medium">{error}</p>
+        <button onClick={fetchProducts} className="btn-primary mt-4">Retry</button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -61,7 +100,6 @@ export default function Products() {
       {/* Search + Filters */}
       <div className="card p-4">
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
           <div className="flex-1">
             <input
               type="text"
@@ -71,30 +109,17 @@ export default function Products() {
               className="input-field"
             />
           </div>
-
-          {/* Filters */}
           <div className="flex flex-wrap gap-2 items-center">
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="input-field w-auto text-sm"
-            >
+            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="input-field w-auto text-sm">
               <option value="All">All Categories</option>
               {categories.map((c) => <option key={c}>{c}</option>)}
             </select>
-            <select
-              value={filterCondition}
-              onChange={(e) => setFilterCondition(e.target.value)}
-              className="input-field w-auto text-sm"
-            >
+            <select value={filterCondition} onChange={(e) => setFilterCondition(e.target.value)} className="input-field w-auto text-sm">
               <option value="All">Any Condition</option>
-              {conditions.map((c) => <option key={c}>{c}</option>)}
+              <option value="new">New</option>
+              <option value="used">Used</option>
             </select>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="input-field w-auto text-sm"
-            >
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="input-field w-auto text-sm">
               <option value="All">All Status</option>
               <option value="Active">Active</option>
               <option value="Sold">Sold</option>
@@ -129,14 +154,13 @@ export default function Products() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 items-stretch">
             {paginatedProducts.map((product) => (
               <ProductCard
-                key={product.id}
+                key={product._id ?? product.id}
                 product={product}
                 onDelete={() => setDeleteTarget(product)}
               />
             ))}
           </div>
 
-          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="flex justify-end mt-8">
               <div className="flex items-center gap-2">
@@ -171,8 +195,10 @@ export default function Products() {
           This action cannot be undone.
         </p>
         <div className="flex gap-3 mt-5">
-          <button onClick={() => setDeleteTarget(null)} className="btn-secondary flex-1">Cancel</button>
-          <button onClick={handleDelete} className="btn-danger flex-1">Delete</button>
+          <button onClick={() => setDeleteTarget(null)} className="btn-secondary flex-1" disabled={deleting}>Cancel</button>
+          <button onClick={handleDelete} className="btn-danger flex-1" disabled={deleting}>
+            {deleting ? 'Deleting…' : 'Delete'}
+          </button>
         </div>
       </Modal>
     </div>

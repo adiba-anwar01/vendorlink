@@ -3,7 +3,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { TrendingUp, Eye, MessageSquare, ShoppingBag } from 'lucide-react';
-import { monthlyOrders, productViews, inquiriesPerProduct, products, orders } from '../data/mockData';
+import { monthlyOrders, productViews, inquiriesPerProduct } from '../data/mockData';
 import StatCard from '../components/ui/StatCard';
 import { formatPrice } from '../components/utils/priceUtils';
 
@@ -53,7 +53,7 @@ export default function Analytics() {
         <StatCard icon={ShoppingBag}   label="Total Revenue"    value={formatPrice(totalRevenue)} color="blue"  />
         <StatCard icon={Eye}           label="Total Views"      value={totalViews}                           color="black" />
         <StatCard icon={MessageSquare} label="Total Inquiries"  value={totalInquiries}                       color="amber" />
-        <StatCard icon={TrendingUp}    label="Conversion Rate"  value={`${((orders.length / totalViews) * 100).toFixed(1)}%`} color="green" />
+        <StatCard icon={TrendingUp}    label="Conversion Rate"  value="N/A" color="green" />
       </div>
 
       {/* Monthly Orders & Revenue – Line Chart */}
