@@ -4,12 +4,14 @@ import { Plus, Package } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { categories } from '../data/mockData';
 import useProductsStore from '../store/useProductsStore';
+import useAuthStore from '../store/useAuthStore';
 import { deleteProduct as apiDeleteProduct } from '../api/productApi';
 import ProductCard from '../components/ui/ProductCard';
 import Modal from '../components/ui/Modal';
 
 export default function Products() {
   const { products, loading, error, fetchProducts, deleteProduct } = useProductsStore();
+  const vendor = useAuthStore((s) => s.vendor);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterCondition, setFilterCondition] = useState('All');
@@ -22,6 +24,16 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
+  const currentVendorId = String(
+    vendor?._id ??
+    vendor?.id ??
+    vendor?.vendor?._id ??
+    vendor?.vendor?.id ??
+    vendor?.user?._id ??
+    vendor?.user?.id ??
+    ''
+  );
+
   // Initial fetch on mount
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
@@ -30,8 +42,16 @@ export default function Products() {
     fetchProducts(filterCondition);
   }, [filterCondition, fetchProducts]);
 
+  const vendorProducts = useMemo(() => (
+    products.filter(
+      (p) =>
+        p.sellerRole === 'vendor' &&
+        String(p.seller?._id ?? p.seller?.id ?? p.seller ?? '') === currentVendorId
+    )
+  ), [products, currentVendorId]);
+
   const filtered = useMemo(() => {
-    return products.filter((p) => {
+    return vendorProducts.filter((p) => {
       const matchSearch    = p.title.toLowerCase().includes(search.toLowerCase());
       const matchCategory  = filterCategory  === 'All' || p.category  === filterCategory;
       // Backend already filters by condition, but we keep this as a safe client-side guard.
@@ -41,7 +61,7 @@ export default function Products() {
       const matchPrice     = !priceMax || p.price <= Number(priceMax);
       return matchSearch && matchCategory && matchCondition && matchStatus && matchPrice;
     });
-  }, [products, search, filterCategory, filterCondition, filterStatus, priceMax]);
+  }, [vendorProducts, search, filterCategory, filterCondition, filterStatus, priceMax]);
 
   // Reset to page 1 when filters change
   useEffect(() => setCurrentPage(1), [search, filterCategory, filterCondition, filterStatus, priceMax]);
@@ -90,7 +110,7 @@ export default function Products() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">My Products</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{products.length} listings total</p>
+          <p className="text-sm text-gray-400 mt-0.5">{vendorProducts.length} listings total</p>
         </div>
         <Link to="/products/add" className="btn-primary shadow-md">
           <Plus className="w-4 h-4" /> Add Product

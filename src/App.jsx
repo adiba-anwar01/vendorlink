@@ -20,6 +20,7 @@ import Profile      from './pages/Profile';
 import MyOrders     from './pages/MyOrders';
 import ExploreItems from './pages/ExploreItems';
 import UserItemDetail from './pages/UserItemDetail';
+import ChatPage from './pages/ChatPage';
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/products/:id"        element={<ProductDetails />} />
           <Route path="/products/:id/edit"   element={<EditProduct />} />
           <Route path="/conversations"       element={<Conversations />} />
+          <Route path="/conversations/:id"   element={<ChatPage />} />
           <Route path="/orders"              element={<Orders />} />
           <Route path="/my-orders"           element={<MyOrders />} />
           <Route path="/analytics"           element={<Analytics />} />

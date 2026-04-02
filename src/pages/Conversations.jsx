@@ -1,138 +1,103 @@
-import { useState } from 'react';
-import { Send, Package, MessageSquare, Search } from 'lucide-react';
-import { conversations as initialConvs, buyers } from '../data/mockData';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MessageSquare, Search } from 'lucide-react';
+import { getMyConversations } from '../api/conversationApi';
 import ConversationListItem from '../components/conversations/ConversationListItem';
-import ChatMessageBubble from '../components/conversations/ChatMessageBubble';
-import useAuthStore from '../store/useAuthStore';
 import InputWithIcon from '../components/ui/InputWithIcon';
 
 export default function Conversations() {
-  const { vendor } = useAuthStore();
-  const [convs, setConvs]       = useState(initialConvs);
-  const [activeId, setActiveId] = useState(convs[0]?.conversation_id);
-  const [search, setSearch]     = useState('');
-  const [message, setMessage]   = useState('');
+  const navigate = useNavigate();
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState('');
+  const [search, setSearch]               = useState('');
 
-  const activeConv    = convs.find((c) => c.conversation_id === activeId);
-  const activeBuyer   = buyers.find((b) => b.id === activeConv?.buyer_id);
-  const activeProductTitle = activeConv?.product_id || 'Unknown Product';
+  useEffect(() => {
+    let isMounted = true;
 
-  const unreadCount = convs.filter((c) => c.unread > 0).length;
+    async function load() {
+      setLoading(true);
+      setError('');
+      try {
+        const res  = await getMyConversations();
+        const list = res.data?.conversations ?? res.data ?? [];
+        if (isMounted) setConversations(Array.isArray(list) ? list : []);
+      } catch (err) {
+        if (isMounted) setError(err.response?.data?.message || 'Failed to load conversations.');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
 
-  const filtered = convs.filter((c) => {
-    const buyer = buyers.find((b) => b.id === c.buyer_id);
-    return buyer?.name.toLowerCase().includes(search.toLowerCase());
+    load();
+    return () => { isMounted = false; };
+  }, []);
+
+  const filtered = conversations.filter((c) => {
+    const buyerName = c.buyer?.name ?? c.buyer?.email ?? '';
+    const title     = c.product?.title ?? '';
+    const q         = search.toLowerCase();
+    return buyerName.toLowerCase().includes(q) || title.toLowerCase().includes(q);
   });
 
-  const sendMessage = () => {
-    if (!message.trim() || !activeConv) return;
-    const newMsg = {
-      id: `m${Date.now()}`,
-      sender_id: vendor.id,
-      message_text: message.trim(),
-      timestamp: new Date().toISOString(),
-    };
-    setConvs((prev) =>
-      prev.map((c) =>
-        c.conversation_id === activeId
-          ? { ...c, messages: [...c.messages, newMsg], lastMessage: newMsg.message_text, timestamp: newMsg.timestamp }
-          : c
-      )
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm text-gray-400 animate-pulse">Loading conversations…</p>
+      </div>
     );
-    setMessage('');
-  };
+  }
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-  };
+  if (error) {
+    return (
+      <div className="card p-8 text-center">
+        <p className="text-sm text-red-500 font-medium">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="btn-primary mt-4"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-[calc(100vh-10rem)] flex gap-4">
-      {/* Conversation List */}
-      <div className="w-72 shrink-0 card overflow-hidden flex flex-col">
-        {/* List header */}
-        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
-          <div className="flex items-center gap-2 mb-3">
-            <MessageSquare className="w-4 h-4 text-blue-500" />
-            <h2 className="text-sm font-bold text-gray-900">Conversations</h2>
-            {unreadCount > 0 && (
-              <span className="ml-auto text-xs bg-blue-500 text-white font-semibold px-2 py-0.5 rounded-full">
-                {unreadCount} new
-              </span>
-            )}
-          </div>
-          <InputWithIcon
-            icon={Search}
-            placeholder="Search buyers…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="text-xs"
-          />
-        </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
-          {filtered.map((conv) => (
-            <ConversationListItem
-              key={conv.conversation_id}
-              conversation={conv}
-              productTitle={conv.product_id}
-              isActive={conv.conversation_id === activeId}
-              onClick={() => setActiveId(conv.conversation_id)}
-            />
-          ))}
-        </div>
+    <div className="space-y-4">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Conversations</h1>
+        <p className="text-sm text-gray-400 mt-0.5">
+          {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+        </p>
       </div>
 
-      {/* Chat Window */}
-      {activeConv ? (
-        <div className="flex-1 card overflow-hidden flex flex-col min-w-0">
-          {/* Chat Header */}
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3 bg-gradient-to-r from-blue-50 to-white">
-            <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-xs font-bold text-blue-600 shrink-0">
-              {activeBuyer?.avatar}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-900">{activeBuyer?.name}</p>
-              <div className="flex items-center gap-1 text-gray-400">
-                <Package className="w-3 h-3" />
-                <span className="text-xs truncate">{activeProductTitle}</span>
-              </div>
-            </div>
-          </div>
+      {/* Search */}
+      <InputWithIcon
+        icon={Search}
+        placeholder="Search by buyer or product…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-3 scrollbar-thin bg-gray-50/50">
-            {activeConv.messages.map((msg) => (
-              <ChatMessageBubble
-                key={msg.id}
-                message={msg}
-                isVendor={msg.sender_id === vendor.id}
-              />
-            ))}
-          </div>
-
-          {/* Input */}
-          <div className="px-4 py-3 border-t border-gray-100 flex items-end gap-3 bg-white">
-            <textarea
-              rows={1}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message… (Enter to send)"
-              className="input-field resize-none flex-1 min-h-[40px] max-h-28"
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!message.trim()}
-              className="btn-primary shrink-0 p-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
+      {/* List */}
+      {filtered.length === 0 ? (
+        <div className="card p-16 flex flex-col items-center gap-3 text-center">
+          <MessageSquare className="w-10 h-10 text-gray-200" />
+          <p className="text-sm text-gray-500 font-medium">No conversations yet</p>
+          <p className="text-xs text-gray-400">
+            Start a conversation from a product listing to begin negotiating.
+          </p>
         </div>
       ) : (
-        <div className="flex-1 card flex flex-col items-center justify-center gap-3 text-gray-400">
-          <MessageSquare className="w-10 h-10 text-gray-200" />
-          <p className="text-sm">Select a conversation to start chatting</p>
+        <div className="card divide-y divide-gray-50 overflow-hidden">
+          {filtered.map((conv) => (
+            <ConversationListItem
+              key={conv._id ?? conv.id}
+              conversation={conv}
+              onClick={() => navigate(`/conversations/${conv._id ?? conv.id}`)}
+            />
+          ))}
         </div>
       )}
     </div>

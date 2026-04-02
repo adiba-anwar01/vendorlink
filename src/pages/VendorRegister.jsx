@@ -66,57 +66,57 @@ export default function VendorRegister() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f6fa] p-6">
+      <div className="w-full max-w-[480px] rounded-[12px] bg-white p-10 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         {/* Brand */}
-        <div style={styles.brand}>
-          <span style={styles.brandIcon}>🔗</span>
-          <span style={styles.brandName}>VendorLink</span>
+        <div className="mb-6 flex items-center gap-2">
+          <span className="text-[22px]">🔗</span>
+          <span className="text-[18px] font-bold tracking-[-0.3px] text-[#4f46e5]">VendorLink</span>
         </div>
 
-        <h2 style={styles.title}>Vendor Registration</h2>
-        <p style={styles.subtitle}>Create your VendorLink account</p>
+        <h2 className="mb-[6px] text-2xl font-bold text-[#1a1a2e]">Vendor Registration</h2>
+        <p className="mb-7 text-sm text-gray-500">Create your VendorLink account</p>
 
         <form onSubmit={handleRegister} noValidate>
-          <div style={styles.field}>
-            <label style={styles.label} htmlFor="name">Store Name</label>
+          <div className="mb-4 flex flex-col">
+            <label className="mb-[6px] text-[13px] font-semibold text-gray-700" htmlFor="name">Store Name</label>
             <input
               id="name"
               type="text"
               placeholder="e.g. Shop1"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              style={styles.input}
+              className="box-border w-full rounded-lg border border-gray-300 px-[14px] py-[10px] text-sm outline-none"
             />
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label} htmlFor="email">Email Address</label>
+          <div className="mb-4 flex flex-col">
+            <label className="mb-[6px] text-[13px] font-semibold text-gray-700" htmlFor="email">Email Address</label>
             <input
               id="email"
               type="email"
               placeholder="vendor@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
+              className="box-border w-full rounded-lg border border-gray-300 px-[14px] py-[10px] text-sm outline-none"
             />
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label} htmlFor="password">Password</label>
+          <div className="mb-4 flex flex-col">
+            <label className="mb-[6px] text-[13px] font-semibold text-gray-700" htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
               placeholder="Minimum 6 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={styles.input}
+              className="box-border w-full rounded-lg border border-gray-300 px-[14px] py-[10px] text-sm outline-none"
             />
           </div>
 
-          <div style={styles.row}>
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label} htmlFor="latitude">Latitude</label>
+          <div className="flex gap-3">
+            <div className="mb-4 flex flex-1 flex-col">
+              <label className="mb-[6px] text-[13px] font-semibold text-gray-700" htmlFor="latitude">Latitude</label>
               <input
                 id="latitude"
                 type="number"
@@ -124,11 +124,11 @@ export default function VendorRegister() {
                 placeholder="e.g. 28.6139"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
-                style={styles.input}
+                className="box-border w-full rounded-lg border border-gray-300 px-[14px] py-[10px] text-sm outline-none"
               />
             </div>
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label} htmlFor="longitude">Longitude</label>
+            <div className="mb-4 flex flex-1 flex-col">
+              <label className="mb-[6px] text-[13px] font-semibold text-gray-700" htmlFor="longitude">Longitude</label>
               <input
                 id="longitude"
                 type="number"
@@ -136,7 +136,7 @@ export default function VendorRegister() {
                 placeholder="e.g. 77.2090"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
-                style={styles.input}
+                className="box-border w-full rounded-lg border border-gray-300 px-[14px] py-[10px] text-sm outline-none"
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function VendorRegister() {
           <button
             type="button"
             onClick={handleGetLocation}
-            style={styles.locationBtn}
+            className="mb-4 w-full rounded-lg border border-dashed border-[#6366f1] bg-[#eef2ff] p-[9px] text-[13px] font-semibold text-[#4f46e5]"
           >
             📍 Use My Current Location
           </button>
@@ -152,121 +152,19 @@ export default function VendorRegister() {
           <button
             type="submit"
             disabled={loading}
-            style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
+            className={`w-full rounded-lg bg-[#4f46e5] p-3 text-[15px] font-semibold text-white transition-opacity duration-200 ${
+              loading ? 'opacity-70' : 'opacity-100'
+            }`}
           >
             {loading ? 'Registering...' : 'Register as Vendor'}
           </button>
         </form>
 
-        <p style={styles.footer}>
+        <p className="mt-5 text-center text-[13px] text-gray-500">
           Already have an account?{' '}
-          <Link to="/login" style={styles.link}>Sign In</Link>
+          <Link to="/login" className="font-semibold text-[#4f46e5] no-underline">Sign In</Link>
         </p>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f5f6fa',
-    padding: '24px',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-    padding: '40px',
-    width: '100%',
-    maxWidth: '480px',
-  },
-  brand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '24px',
-  },
-  brandIcon: {
-    fontSize: '22px',
-  },
-  brandName: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#4f46e5',
-    letterSpacing: '-0.3px',
-  },
-  title: {
-    margin: '0 0 6px',
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#1a1a2e',
-  },
-  subtitle: {
-    margin: '0 0 28px',
-    fontSize: '14px',
-    color: '#6b7280',
-  },
-  field: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginBottom: '16px',
-  },
-  label: {
-    fontSize: '13px',
-    fontWeight: '600',
-    marginBottom: '6px',
-    color: '#374151',
-  },
-  input: {
-    padding: '10px 14px',
-    border: '1px solid #d1d5db',
-    borderRadius: '8px',
-    fontSize: '14px',
-    outline: 'none',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
-  row: {
-    display: 'flex',
-    gap: '12px',
-  },
-  locationBtn: {
-    width: '100%',
-    padding: '9px',
-    marginBottom: '16px',
-    border: '1px dashed #6366f1',
-    borderRadius: '8px',
-    backgroundColor: '#eef2ff',
-    color: '#4f46e5',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  submitBtn: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#4f46e5',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'opacity 0.2s',
-  },
-  footer: {
-    marginTop: '20px',
-    textAlign: 'center',
-    fontSize: '13px',
-    color: '#6b7280',
-  },
-  link: {
-    color: '#4f46e5',
-    fontWeight: '600',
-    textDecoration: 'none',
-  },
-};

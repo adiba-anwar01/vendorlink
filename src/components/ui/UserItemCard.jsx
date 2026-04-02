@@ -1,96 +1,145 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image, ShoppingCart, Eye } from 'lucide-react';
-import useMyOrdersStore from '../../store/useMyOrdersStore';
+import { Image, ShoppingCart, Eye, MessageCircle } from 'lucide-react';
+import { placeOrder } from '../../api/orderApi';
 import { formatPrice } from '../utils/priceUtils';
+import { startConversation } from '../../api/conversationApi';
+import { toast } from 'react-toastify';
+import OrderModal from './OrderModal';
 
 export default function UserItemCard({ item }) {
-  const placeOrder = useMyOrdersStore((s) => s.placeOrder);
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
+  const [ordering, setOrdering] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+
+  const productId = item._id ?? item.id;
+
+  async function handleChat() {
+    setChatLoading(true);
+    try {
+      const res = await startConversation(productId);
+      const conv = res.data?.conversation ?? res.data;
+      const convId = conv._id ?? conv.id;
+      navigate(`/conversations/${convId}`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not start conversation.');
+    } finally {
+      setChatLoading(false);
+    }
+  }
+
+  async function handleConfirmOrder({ buyerName, phoneNumber, deliveryAddress, notes }) {
+    setOrdering(true);
+
+    try {
+      const finalNotes = notes
+        ? `Buyer Name: ${buyerName}\n${notes}`
+        : `Buyer Name: ${buyerName}`;
+
+      // FIX: the order button now opens a modal first and sends req.body with delivery details on confirm.
+      await placeOrder(productId, { phoneNumber, deliveryAddress, notes: finalNotes });
+      setOrderSuccess(true);
+      setOrderModalOpen(false);
+      toast.success('Order placed! Check My Orders.');
+      setTimeout(() => setOrderSuccess(false), 3000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to place order.');
+    } finally {
+      setOrdering(false);
+    }
+  }
 
   const categoryColors = {
-    Mobile:      { bg: 'bg-purple-100', text: 'text-purple-700' },
-    Electronics: { bg: 'bg-blue-100',   text: 'text-blue-700'   },
-    Furniture:   { bg: 'bg-amber-100',  text: 'text-amber-700'  },
+    Mobile: { bg: 'bg-purple-100', text: 'text-purple-700' },
+    Electronics: { bg: 'bg-blue-100', text: 'text-blue-700' },
+    Furniture: { bg: 'bg-amber-100', text: 'text-amber-700' },
   };
   const catStyle = categoryColors[item.category] || { bg: 'bg-gray-100', text: 'text-gray-600' };
 
-  function handlePlaceOrder() {
-    placeOrder(item);
-    setOrderSuccess(true);
-    setTimeout(() => setOrderSuccess(false), 3000);
-  }
-
   return (
-    <div className="card card-hover overflow-hidden group flex flex-col h-full">
-      {/* Image — fixed height */}
-      <div className="relative h-40 bg-gray-100 overflow-hidden shrink-0">
+    <div className="card card-hover group flex h-full flex-col overflow-hidden">
+      <div className="relative h-40 shrink-0 overflow-hidden bg-gray-100">
         {item.image ? (
           <img
             src={item.image}
             alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Image className="w-8 h-8 text-gray-300" />
+          <div className="flex h-full w-full items-center justify-center">
+            <Image className="h-8 w-8 text-gray-300" />
           </div>
         )}
-        {/* Category badge */}
-        <div className="absolute top-2 left-2">
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${catStyle.bg} ${catStyle.text}`}>
+
+        <div className="absolute left-2 top-2">
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${catStyle.bg} ${catStyle.text}`}>
             {item.category}
           </span>
         </div>
-        {/* Condition badge */}
-        <div className="absolute top-2 right-2">
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-            item.condition === 'New' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'
-          }`}>
+
+        <div className="absolute right-2 top-2">
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+              item.condition === 'New' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'
+            }`}
+          >
             {item.condition}
           </span>
         </div>
       </div>
 
-      {/* Content — flex grow, buttons pinned to bottom */}
-      <div className="p-3 flex flex-col flex-1">
-        <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug mb-0.5">
+      <div className="flex flex-1 flex-col p-3">
+        <h3 className="mb-0.5 line-clamp-2 text-xs font-semibold leading-snug text-gray-900">
           {item.title}
         </h3>
-        <p className="text-[11px] text-gray-400 mb-1 truncate">By {item.seller}</p>
+        <p className="mb-1 truncate text-[11px] text-gray-400">By {item.seller}</p>
 
-        <span className="text-sm font-bold text-gray-900 mb-1">
-          {formatPrice(item.price)}
-        </span>
+        <span className="mb-1 text-sm font-bold text-gray-900">{formatPrice(item.price)}</span>
 
-        {/* Success banner */}
         {orderSuccess && (
-          <div className="mb-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200
-            rounded px-2 py-1 text-center font-medium">
-            ✅ Ordered! Check My Orders.
+          <div className="mb-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-center text-[10px] font-medium text-emerald-700">
+            Ordered! Check My Orders.
           </div>
         )}
 
-        {/* Actions — always at bottom */}
-        <div className="flex items-center gap-1.5 pt-2 border-t border-gray-100 mt-auto">
+        <div className="mt-auto flex items-center gap-1.5 border-t border-gray-100 pt-2">
           <button
             onClick={() => navigate(`/explore-items/${item.id}`)}
-            className="flex-1 btn-secondary text-[11px] py-1 px-2 rounded-lg
-              hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"
+            className="btn-secondary flex-1 rounded-lg px-2 py-1 text-[11px] hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600"
           >
-            <Eye className="w-3 h-3 shrink-0" />
+            <Eye className="h-3 w-3 shrink-0" />
             <span>Details</span>
           </button>
           <button
-            onClick={handlePlaceOrder}
-            className="flex-1 flex items-center justify-center gap-1.5 btn-primary text-[11px] py-1 px-2 rounded-lg"
+            onClick={() => setOrderModalOpen(true)}
+            disabled={ordering}
+            className="btn-primary flex-1 rounded-lg px-2 py-1 text-[11px] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <ShoppingCart className="w-3 h-3 shrink-0" />
-            <span>Order</span>
+            <span className="flex items-center justify-center gap-1.5">
+              <ShoppingCart className="h-3 w-3 shrink-0" />
+              <span>{ordering ? '...' : 'Order'}</span>
+            </span>
+          </button>
+          <button
+            onClick={handleChat}
+            disabled={chatLoading}
+            title="Chat with seller"
+            className="btn-secondary flex items-center justify-center gap-1 rounded-lg px-2 py-1 text-[11px] hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-50"
+          >
+            <MessageCircle className="h-3 w-3 shrink-0" />
           </button>
         </div>
       </div>
+
+      {orderModalOpen && (
+        <OrderModal
+          item={item}
+          onClose={() => setOrderModalOpen(false)}
+          onConfirm={handleConfirmOrder}
+        />
+      )}
     </div>
   );
 }

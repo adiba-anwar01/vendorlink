@@ -1,10 +1,29 @@
-import { Image, Edit2, Trash2, Eye } from 'lucide-react';
+import { useState } from 'react';
+import { Image, Edit2, Trash2, Eye, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Badge from './Badge';
 import { formatPrice } from '../utils/priceUtils';
+import { startConversation } from '../../api/conversationApi';
+import { toast } from 'react-toastify';
 
 export default function ProductCard({ product, onEdit, onDelete }) {
   const navigate = useNavigate();
+  const [chatLoading, setChatLoading] = useState(false);
+
+  const productId = product._id ?? product.id;
+
+  async function handleChat() {
+    setChatLoading(true);
+    try {
+      const res  = await startConversation(productId);
+      const conv = res.data?.conversation ?? res.data;
+      navigate(`/conversations/${conv._id ?? conv.id}`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not start conversation.');
+    } finally {
+      setChatLoading(false);
+    }
+  }
 
   return (
     <div className="card card-hover overflow-hidden group flex flex-col h-full">
@@ -66,6 +85,15 @@ export default function ProductCard({ product, onEdit, onDelete }) {
             >
               <Trash2 className="w-3 h-3 shrink-0" />
               <span>Delete</span>
+            </button>
+            <button
+              onClick={handleChat}
+              disabled={chatLoading}
+              title="Chat about this product"
+              className="flex items-center justify-center px-2 py-1 btn-secondary text-[11px] rounded-lg
+                hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+            >
+              <MessageCircle className="w-3 h-3 shrink-0" />
             </button>
           </div>
         </div>
