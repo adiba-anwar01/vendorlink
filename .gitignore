@@ -1,5 +1,5 @@
+.vite
 node_modules/
 .env
 dist/
 build/
-s
