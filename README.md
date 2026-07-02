@@ -1,4 +1,4 @@
-# VendorLink 🛒
+# VendorLink
 
 VendorLink is a full-stack MERN marketplace platform.
 
