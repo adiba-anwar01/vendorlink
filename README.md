@@ -14,60 +14,61 @@
 
 **VendorLink** is a scalable full-stack **web application** built with the MERN stack that connects users and local vendors through a unified digital marketplace. The platform enables users to discover, buy, sell, and negotiate products while providing vendors with powerful tools to manage listings, orders, and business insights. It features geolocation-based product discovery, real-time messaging, interactive offer negotiation, end-to-end order lifecycle management, secure authentication, and an analytics-driven vendor dashboard. Designed with a modular, feature-based architecture and modern software engineering practices, VendorLink emphasizes scalability, maintainability, performance, and a seamless user experience.
 
----
-
 ## System Architecture
 
-The application architecture utilizes a decoupled single-page client interface communicating with a headless Express/Socket.IO backend service. The Balanced, Symmetric layout below outlines the structural layers and data transmission pipelines:
+The application architecture is structured with a modular React frontend communicating with an Express and Socket.IO backend service. The diagram below outlines the structural layers and data transmission pipelines:
 
 ```mermaid
-graph TD
-    %% Client Layer (Symmetrical & Centered)
+graph LR
+    %% Client Layer (React SPA)
     subgraph ClientLayer ["Client Layer (React SPA)"]
-        Router[React Router] --> UI[UI components]
-        UI --> Store[Zustand State Store]
-        Store --> Axios[Axios Client / JWT]
+        direction TB
+        Router[React Router] --> UI[UI Components]
+        UI --> Store[Zustand Store]
+        Store --> Axios[Axios Client]
         Store --> WSClient[Socket.IO Client]
     end
 
-    %% Communication Pipelines (Left / Right Symmetry)
-    Axios -->|HTTP REST Requests + Bearer Token| ExpressRoutes[Express Routing Endpoints]
-    WSClient -->|Duplex WebSocket Events| WSListener[Socket.IO WS Listener]
+    %% Communication Channels
+    Axios -->|HTTP REST / JWT| ExpressRoutes["Express API Endpoints"]
+    WSClient -->|WebSocket Events| WSListener["Socket.IO Server Listener"]
 
-    %% Service Layer (Symmetrical Processing)
+    %% Service Layer
     subgraph ServiceLayer ["Backend Service Layer (NodeJS / Express)"]
+        direction TB
         subgraph RESTPipeline ["REST Pipeline"]
-            ExpressRoutes --> Middleware[CORS & JWT Auth Middleware]
-            Middleware --> Controllers[API Controllers]
+            ExpressRoutes --> Middleware["CORS & JWT Middleware"]
+            Middleware --> Controllers["API Controllers"]
         end
 
         subgraph WSPipeline ["WebSocket Pipeline"]
-            WSListener --> SocketRooms[Socket Room Managers]
+            WSListener --> SocketRooms["Socket Room Managers"]
         end
     end
 
-    %% Data Layer (Converging at Center Database)
-    Controllers -->|Mongoose Schema Models| MongoDB[(MongoDB Atlas DB)]
-    SocketRooms -->|Mongoose Schema Models| MongoDB
+    %% Data Layer
+    Controllers -->|Mongoose Schema| MongoDB[(MongoDB Atlas DB)]
+    SocketRooms -->|Mongoose Schema| MongoDB
+    Controllers -->|Upload| Cloudinary[Cloudinary CDN]
 
-    %% Schema Indexing (Symmetrical Layout)
-    subgraph DataPersistence ["Data Schema collections"]
+    subgraph DataPersistence ["Data Schema Collections"]
+        direction TB
         MongoDB --> UsersCollection[Users / Bcrypt]
         MongoDB --> ProductsCollection[Products / 2dsphere]
         MongoDB --> ChatCollection[Chats / Messages]
         MongoDB --> OrdersCollection[Orders / Transactions]
     end
 
-    %% Design Class Tokens
-    classDef client fill:#e0f7fa,stroke:#00acc1,stroke-width:1.5px;
-    classDef comm fill:#fff3e0,stroke:#fb8c00,stroke-width:1.5px;
-    classDef service fill:#ede7f6,stroke:#5e35b1,stroke-width:1.5px;
-    classDef data fill:#e8f5e9,stroke:#2e7d32,stroke-width:1.5px;
+    %% Design Class Tokens for high contrast in light/dark mode
+    classDef client stroke:#00acc1,stroke-width:2px;
+    classDef comm stroke:#fb8c00,stroke-width:2px;
+    classDef service stroke:#5e35b1,stroke-width:2px;
+    classDef data stroke:#2e7d32,stroke-width:2px;
     
     class Router,UI,Store,Axios,WSClient client;
     class ExpressRoutes,WSListener comm;
     class Middleware,Controllers,SocketRooms service;
-    class MongoDB,UsersCollection,ProductsCollection,ChatCollection,OrdersCollection data;
+    class MongoDB,Cloudinary,UsersCollection,ProductsCollection,ChatCollection,OrdersCollection data;
 ```
 
 - **Client Layer**: Uses **React** and **Vite** for optimized builds. Global states are isolated inside **Zustand** stores, keeping components decoupled from direct API logic.
