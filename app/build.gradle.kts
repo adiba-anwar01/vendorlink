@@ -20,13 +20,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-        // ── Externalized Constants ──────────────────────────────────────────
-        // Change BASE_URL here when deploying to production:
-        //   e.g. "https://api.vendorlink.app/api/"
-        buildConfigField("String", "BASE_URL", "\"http://192.168.0.102:5000/api/\"")
-        buildConfigField("long", "TOKEN_EXPIRY_SECONDS", "604800L") // 7 days
-        buildConfigField("int", "DEFAULT_SEARCH_RADIUS_METERS", "5000")
     }
 
     buildTypes {
@@ -50,7 +43,6 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
@@ -100,9 +92,6 @@ dependencies {
 
     // Coroutines
     implementation(libs.coroutines.android)
-
-    // Logging
-    implementation(libs.timber)
 
     // Security (EncryptedSharedPreferences)
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
