@@ -94,9 +94,48 @@ graph LR
 
 ## Full-Stack Data & Control Flows
 
-### 1. Geospatial Registration & Discovery Sequence
+### 1. Secure Authentication Sequence
 
-**Explanation of the Geospatial Pipeline:**
+- **Registration & Login**: The user registers or submits credentials. The backend encrypts passwords with Bcrypt on signup, verifies them on login, and issues a signed JSON Web Token (JWT).
+- **Session Sync & Authorization**: The client saves the token to `localStorage` and hydrates the Zustand auth store. React Router guards protect paths by validating the Zustand authenticated state.
+- **Request Authorization**: Subsequent API requests pass through an Axios interceptor that automatically attaches the token as a `Bearer` header. Express middleware intercepts incoming requests to decode and verify the JWT before allowing access.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User Client
+    participant Router as React Router Guards
+    participant Axios as Axios Interceptors
+    participant API as Express API Server
+    participant DB as MongoDB Database
+
+    Note over User, API: 1. User Authentication (Login)
+    User->>API: POST /api/auth/login (Credentials)
+    API->>DB: Query User document by email
+    DB-->>API: User details + hashed password
+    API->>API: Verify password via bcrypt.compare()
+    API->>API: Generate JWT (Signed with JWT_SECRET)
+    API-->>User: Response HTTP 200 (Profile details + Token)
+
+    Note over User, Axios: 2. Session Persistence & Token Injection
+    User->>User: Save Token to localStorage & Zustand state
+    User->>Router: Access protected route (e.g. /dashboard)
+    Router->>Router: Check Zustand store (Permit navigation)
+    User->>Axios: Call protected API endpoint
+    Axios->>Axios: Read Token & Inject Bearer header
+    Axios->>API: GET /api/products/my (Request + Bearer Token)
+
+    Note over API, DB: 3. Server Authorization
+    API->>API: Process Auth Middleware (Verify JWT)
+    API->>DB: Perform authorized query
+    DB-->>API: Query results
+    API-->>User: Response payload HTTP 200
+```
+
+---
+
+### 2. Location-Based Signup & Product Discovery
+
 - **Registration Phase**: The vendor client initializes a registration request. The browser queries the HTML5 Geolocation API, returning the physical `[Latitude, Longitude]` coordinates. The frontend submits a POST registration payload. The Express server encrypts the password with Bcrypt and generates a Mongoose User schema format with a GeoJSON `Point` coordinate array. The document is persisted in MongoDB, which indexes the coordinates under a `2dsphere` type to support rapid location searches.
 - **Discovery Phase**: A buyer sets a search radius. The client invokes a GET query with current coordinates and the search radius. The Express server executes a `$near` query in MongoDB. The database performs an index-based proximity search and returns the listings sorted from nearest to furthest. The client calculates the precise kilometer distances dynamically and renders the item cards.
 
@@ -128,9 +167,8 @@ sequenceDiagram
 
 ---
 
-### 2. Real-Time Chat & Price Negotiation Sequence
+### 3. Real-Time Chat & Price Negotiation Sequence
 
-**Explanation of the Real-Time Bidding System:**
 - **Socket Initialization**: When a user selects a thread, the client initializes the Socket.IO library, establishing a WebSocket connection using the active JWT for authorization. The client sends a `joinChat` message to bind their connection to the specific conversation ID room.
 - **Negotiation Mechanics**: Sending text or a counter-offer invokes a REST POST API call. The backend writes the message to the database and instructs the socket server to emit a `newMessage` / `offerUpdated` message to all sockets connected to that room. The buyer and seller interfaces receive the payload instantly and compare the sender ID with their own ID. If it matches, it displays as `"Your Offer"` (right-aligned); if it differs, it displays as `"Their Offer"` (left-aligned).
 
@@ -160,9 +198,8 @@ sequenceDiagram
 
 ---
 
-### 3. Transaction Lockout & Fulfillment Sequence
+### 4. Transaction Lockout & Fulfillment Sequence
 
-**Explanation of the Lockout and Fulfillment Logic:**
 - **Checkout Process**: The seller accepts the final price (updating thread state to `accepted`). The buyer initiates checkout, supplying address and billing details in the `OrderModal`, which submits a POST request to Express.
 - **Order Creation & Lockout**: The backend generates an Order document in MongoDB and updates the corresponding Product status to `sold`. The Express backend emits an `orderUpdated` event via sockets.
 - **Client Freeze Interceptor**: The buyer's browser intercepts `PRODUCT_ORDERED_EVENT` on the window. This updates the local Zustand caches, removing the sold item from the explore list. A closed-deal system notice is appended to the message thread, and all inputs, buttons, and textareas are disabled to lock the conversation.
