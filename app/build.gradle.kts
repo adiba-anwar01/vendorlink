@@ -1,0 +1,118 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
+}
+
+android {
+    namespace = "com.arif.vl"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.arif.vl"
+        minSdk = 28
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
+
+        // ── Externalized Constants ──────────────────────────────────────────
+        // Change BASE_URL here when deploying to production:
+        //   e.g. "https://api.vendorlink.app/api/"
+        buildConfigField("String", "BASE_URL", "\"http://192.168.0.102:5000/api/\"")
+        buildConfigField("long", "TOKEN_EXPIRY_SECONDS", "604800L") // 7 days
+        buildConfigField("int", "DEFAULT_SEARCH_RADIUS_METERS", "5000")
+    }
+
+    buildTypes {
+        debug {
+            isMinifyEnabled = false
+        }
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+dependencies {
+    // Core
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.activity.compose)
+
+    // Compose BOM
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.material.icons.extended)
+
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
+    // Retrofit & Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.logging)
+    implementation(libs.gson)
+
+    // Socket.IO
+    implementation("io.socket:socket.io-client:2.1.0")
+
+    // Coil
+    implementation(libs.coil.compose)
+
+    // Coroutines
+    implementation(libs.coroutines.android)
+
+    // Logging
+    implementation(libs.timber)
+
+    // Security (EncryptedSharedPreferences)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+}
