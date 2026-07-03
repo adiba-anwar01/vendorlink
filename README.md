@@ -1,4 +1,4 @@
-# 🛍️ VendorLink Android Client
+# VendorLink Android Client
 
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.9.24-blue?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/Compose-1.5-green?style=for-the-badge&logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
@@ -10,18 +10,18 @@ VendorLink is a modern, high-performance Android e-commerce client built with **
 
 ---
 
-## ✨ Features
+## Features
 
-- **🔐 Secure Authentication**: Integrated signup and login flows using industry-standard JWT credentials securely saved on-device via `EncryptedSharedPreferences`.
-- **📍 Location-Based Cataloging**: Geo-queries listings using MongoDB `$geoNear` pipelines. The app automatically determines distances (in km) to nearby products.
-- **💬 Real-time Price Negotiation**: Buyer-to-seller chat interface supported by a persistent Socket.IO room. Allows users to submit custom price offers that sellers can accept or reject instantly.
-- **📦 Listing Management**: Acts as both a buying client and seller dashboard. Sellers can compose product drafts, fetch GPS coordinates using fused location APIs, upload media assets, and track pending sales.
-- **🛒 Order Tracking**: Complete order lifecycle tracker showing status indicators (Placed, In-Transit, Completed) for both buyer purchases and seller orders.
-- **🎨 Slate Design Theme**: Unified spacing rules and HSL colors optimized for both **Dark Mode** and **Light Mode** configurations.
+- **Secure Authentication**: Integrated signup and login flows using industry-standard JWT credentials securely saved on-device via `EncryptedSharedPreferences`.
+- **Location-Based Cataloging**: Geo-queries listings using MongoDB `$geoNear` pipelines. The app automatically determines distances (in km) to nearby products.
+- **Real-time Price Negotiation**: Buyer-to-seller chat interface supported by a persistent Socket.IO room. Allows users to submit custom price offers that sellers can accept or reject instantly.
+- **Listing Management**: Acts as both a buying client and seller dashboard. Sellers can compose product drafts, fetch GPS coordinates using fused location APIs, upload media assets, and track pending sales.
+- **Order Tracking**: Complete order lifecycle tracker showing status indicators (Placed, In-Transit, Completed) for both buyer purchases and seller orders.
+- **Slate Design Theme**: Unified spacing rules and HSL colors optimized for both **Dark Mode** and **Light Mode** configurations.
 
 ---
 
-## 🏗️ Architecture Blueprint
+## Architecture Blueprint
 
 The project implements **Clean Architecture** patterns coupled with **MVVM (Model-View-ViewModel)** to achieve absolute separation of concerns, high testability, and clear dependency boundaries.
 
@@ -67,7 +67,7 @@ graph TD
 
 ---
 
-## 🔄 Full-Stack Data & Control Flows
+## Full-Stack Data & Control Flows
 
 To understand how the Android client interacts with the backend server and MongoDB database, here is a breakdown of the primary end-to-end user flows in simple terms.
 
@@ -203,7 +203,7 @@ Finalizing orders and locking listings:
 
 ---
 
-## 📂 Repository File Structure
+## Repository File Structure
 
 ```
 app/src/main/java/com/arif/vl/
@@ -236,7 +236,7 @@ app/src/main/java/com/arif/vl/
 
 ---
 
-## ⚙️ Technical Highlights & Configurations
+## Technical Highlights & Configurations
 
 ### 1. Security with Encrypted Preferences
 Credentials and JWT tokens are saved using AES-256 GCM encryption via Jetpack Security. This prevents rooted devices or third-party backup tools from exposing access tokens:
@@ -270,7 +270,7 @@ if (BuildConfig.DEBUG) {
 
 ---
 
-## 🚀 Setup & Build Instructions
+## Setup & Build Instructions
 
 ### Prerequisites
 - **Android Studio**: Iguana (or newer)
@@ -310,6 +310,6 @@ if (BuildConfig.DEBUG) {
 
 ---
 
-## 📝 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
