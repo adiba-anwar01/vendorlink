@@ -1,15 +1,6 @@
 const Product = require("../models/Product");
-const User = require("../models/User");
 const cloudinary = require("cloudinary").v2;
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// Upload image to Cloudinary
 exports.uploadImage = async (req, res) => {
   try {
     if (!req.file) {
@@ -18,14 +9,15 @@ exports.uploadImage = async (req, res) => {
       });
     }
 
-    // Check if Cloudinary is configured
+    const cloudName = process.env.CLOUDINARY_NAME;
+
     if (
-      !process.env.CLOUDINARY_NAME ||
+      !cloudName ||
       !process.env.CLOUDINARY_API_KEY ||
       !process.env.CLOUDINARY_API_SECRET
     ) {
       console.error("Cloudinary credentials missing:", {
-        name: !!process.env.CLOUDINARY_NAME,
+        name: !!cloudName,
         key: !!process.env.CLOUDINARY_API_KEY,
         secret: !!process.env.CLOUDINARY_API_SECRET,
       });
@@ -34,21 +26,12 @@ exports.uploadImage = async (req, res) => {
       });
     }
 
-    // Reconfigure Cloudinary (ensure fresh config)
     cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_NAME,
+      cloud_name: cloudName,
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
 
-    console.log(
-      "Uploading file:",
-      req.file.originalname,
-      "Size:",
-      req.file.size,
-    );
-
-    // Upload to Cloudinary
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -57,13 +40,12 @@ exports.uploadImage = async (req, res) => {
           quality: "auto",
           fetch_format: "auto",
         },
-        (error, result) => {
+        (error, uploadResult) => {
           if (error) {
             console.error("Cloudinary upload error:", error);
             reject(error);
           } else {
-            console.log("Cloudinary upload success:", result.secure_url);
-            resolve(result);
+            resolve(uploadResult);
           }
         },
       );
@@ -91,7 +73,8 @@ exports.uploadImage = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { title, description, price, category, condition, images } = req.body;
+    const { title, description, price, category, condition, images, location } =
+      req.body;
 
     if (!title || !description || !price || !category || !condition) {
       return res.status(400).json({
@@ -99,11 +82,22 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    // Get seller's location to associate with product
-    const seller = await User.findById(req.user.id);
-    if (!seller) {
-      return res.status(404).json({
-        message: "Seller not found",
+    if (
+      !location ||
+      location.type !== "Point" ||
+      !Array.isArray(location.coordinates) ||
+      location.coordinates.length !== 2
+    ) {
+      return res.status(400).json({
+        message: "Product location is required",
+      });
+    }
+
+    const [longitude, latitude] = location.coordinates.map(Number);
+
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+      return res.status(400).json({
+        message: "Product location coordinates are invalid",
       });
     }
 
@@ -113,13 +107,21 @@ exports.createProduct = async (req, res) => {
       price,
       category,
       condition,
-      images: images || [],
+      images: Array.isArray(images) ? images : [],
+      location: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
       seller: req.user.id,
       sellerRole: req.user.role,
-      location: seller.location || undefined, // Copy seller's location to product
     });
 
-    res.status(201).json(product);
+    const createdProduct = await Product.findById(product._id).populate(
+      "seller",
+      "name role",
+    );
+
+    res.status(201).json(createdProduct);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -127,37 +129,10 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
   try {
-    const {
-      category,
-      condition,
-      title,
-      minPrice,
-      maxPrice,
-      sellerRole,
-      status,
-    } = req.query;
-
-    const filter = {
-      status: status || "open",
-    };
-
-    if (category) filter.category = category;
-    if (condition) filter.condition = condition;
-    if (title) {
-      filter.title = {
-        $regex: title,
-        $options: "i",
-      };
-    }
-    if (sellerRole) filter.sellerRole = sellerRole;
-
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      filter.price = {};
-      if (minPrice !== undefined) filter.price.$gte = parseFloat(minPrice);
-      if (maxPrice !== undefined) filter.price.$lte = parseFloat(maxPrice);
-    }
-
-    const products = await Product.find(filter).populate("seller", "name role");
+    const products = await Product.find({ status: "open" }).populate(
+      "seller",
+      "name role",
+    );
 
     res.json(products);
   } catch (error) {
@@ -210,7 +185,6 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-// UPDATE PRODUCT
 exports.updateProduct = async (req, res) => {
   try {
     const { title, description, price } = req.body;
@@ -223,21 +197,18 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    // Only seller can update
     if (product.seller.toString() !== req.user.id) {
       return res.status(401).json({
         message: "Not authorized",
       });
     }
 
-    // Cannot update sold product
     if (product.status === "sold") {
       return res.status(400).json({
         message: "Cannot update a sold product",
       });
     }
 
-    // Update only provided fields
     if (title !== undefined) product.title = title;
     if (description !== undefined) product.description = description;
     if (price !== undefined) {
@@ -259,7 +230,7 @@ exports.updateProduct = async (req, res) => {
 
 exports.searchNearbyProducts = async (req, res) => {
   try {
-    const { lat, lng, radius } = req.query;
+    const { lat, lng, radius, query, page = 1, limit = 10 } = req.query;
 
     if (!lat || !lng) {
       return res.status(400).json({
@@ -270,28 +241,89 @@ exports.searchNearbyProducts = async (req, res) => {
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
 
-    // Convert radius (in km) to meters for MongoDB. Default: 50km
-    const radiusMeters = radius ? Math.round(parseFloat(radius) * 1000) : 50000;
+    const searchRadius = radius ? parseInt(radius, 10) : 5000;
+    const parsedPage = parseInt(page, 10) || 1;
+    const parsedLimit = parseInt(limit, 10) || 10;
+    const skip = (parsedPage - 1) * parsedLimit;
 
-    // Query products by their location using geospatial queries
-    const products = await Product.find({
-      location: {
-        $near: {
-          $geometry: {
+    const targetRole = req.user.role === "user" ? "vendor" : "user";
+
+    const matchQuery = {
+      status: "open",
+      sellerRole: targetRole,
+    };
+
+    if (query) {
+      matchQuery.title = {
+        $regex: query,
+        $options: "i",
+      };
+    }
+
+    const results = await Product.aggregate([
+      {
+        $geoNear: {
+          near: {
             type: "Point",
             coordinates: [longitude, latitude],
           },
-          $maxDistance: radiusMeters,
+          key: "location",
+          distanceField: "distanceMeters",
+          maxDistance: searchRadius,
+          spherical: true,
+          query: matchQuery,
         },
       },
-      status: "open",
-    })
-      .populate("seller", "name role location")
-      .select(
-        "title description price category condition images seller status location createdAt",
-      );
 
-    res.json(products);
+      {
+        $lookup: {
+          from: "users",
+          localField: "seller",
+          foreignField: "_id",
+          as: "seller",
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$seller",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          description: 1,
+          price: 1,
+          category: 1,
+          condition: 1,
+          images: 1,
+          location: 1,
+          sellerRole: 1,
+          status: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          seller: {
+            _id: "$seller._id",
+            name: "$seller.name",
+            role: "$seller.role",
+          },
+          distanceKm: {
+            $divide: ["$distanceMeters", 1000],
+          },
+        },
+      },
+
+      { $sort: { distanceMeters: 1 } },
+
+      { $skip: skip },
+
+      { $limit: parsedLimit },
+    ]);
+
+    res.json(results);
   } catch (error) {
     res.status(500).json({
       message: error.message,

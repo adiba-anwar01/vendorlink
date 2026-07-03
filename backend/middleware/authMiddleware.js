@@ -15,9 +15,13 @@ const protect = (req, res, next) => {
     req.user = decoded;
 
     next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ message: "Token invalid" });
   }
+};
+
+protect.verifyToken = (token) => {
+  return jwt.verify(token, process.env.JWT_SECRET);
 };
 
 module.exports = protect;

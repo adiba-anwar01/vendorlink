@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Image, ShoppingCart, Eye, MessageCircle } from "lucide-react";
-import { placeOrder } from "../../api/orderApi";
-import { formatPrice } from "../utils/priceUtils";
-import { startConversation } from "../../api/conversationApi";
+import { Image } from "lucide-react";
+import { placeOrder } from "../../features/orders/api/orderApi";
+import { formatPrice } from "../../utils/priceUtils";
+import { startConversation } from "../../features/conversations/api/conversationApi";
 import { toast } from "react-toastify";
-import OrderModal from "./OrderModal";
+import OrderModal from "../../features/orders/components/OrderModal";
+import { dispatchProductOrdered } from "../../utils/orderEvents";
+import { cardClass as sharedCardClass, btnSecondary, btnPrimary } from "../../utils/theme";
 
 export default function UserItemCard({ item }) {
   const navigate = useNavigate();
@@ -50,6 +52,7 @@ export default function UserItemCard({ item }) {
         deliveryAddress,
         notes: finalNotes,
       });
+      dispatchProductOrdered(productId);
       setOrderSuccess(true);
       setOrderModalOpen(false);
       toast.success("Order placed! Check My Orders.");
@@ -61,18 +64,10 @@ export default function UserItemCard({ item }) {
     }
   }
 
-  const categoryColors = {
-    Mobile: { bg: "bg-purple-100", text: "text-purple-700" },
-    Electronics: { bg: "bg-blue-100", text: "text-blue-700" },
-    Furniture: { bg: "bg-amber-100", text: "text-amber-700" },
-  };
-  const catStyle = categoryColors[item.category] || {
-    bg: "bg-gray-100",
-    text: "text-gray-600",
-  };
+  const cardClass = `${sharedCardClass} hover:shadow-lg hover:-translate-y-1 transition-all duration-200`;
 
   return (
-    <div className="card card-hover group flex h-full flex-col overflow-hidden">
+    <div className={`${cardClass} group flex h-full flex-col overflow-hidden`}>
       <div className="relative h-40 shrink-0 overflow-hidden bg-gray-100">
         {item.image ? (
           <img
@@ -88,7 +83,7 @@ export default function UserItemCard({ item }) {
 
         <div className="absolute left-2 top-2">
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${catStyle.bg} ${catStyle.text}`}
+            className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-white text-gray-900 border border-gray-100 shadow-sm"
           >
             {item.category}
           </span>
@@ -96,11 +91,10 @@ export default function UserItemCard({ item }) {
 
         <div className="absolute right-2 top-2">
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-              item.condition === "New"
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-gray-200 text-gray-600"
-            }`}
+            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.condition === "New"
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-gray-200 text-gray-600"
+              }`}
           >
             {item.condition}
           </span>
@@ -115,7 +109,7 @@ export default function UserItemCard({ item }) {
           By {item.seller}
         </p>
 
-        <span className="mb-1 text-sm font-bold text-gray-900">
+        <span className="mb-1 text-sm font-bold text-gradient-primary w-fit">
           {formatPrice(item.price)}
         </span>
 
@@ -129,30 +123,25 @@ export default function UserItemCard({ item }) {
           <div className="grid grid-cols-3 gap-1.5">
             <button
               onClick={() => navigate(`/explore-items/${item.id}`)}
-              className="btn-secondary rounded-lg px-2 py-2 text-[11px] flex items-center justify-center gap-1 whitespace-nowrap"
-              title="View details"
+              className="inline-flex items-center justify-center bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-slate-50 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-lg px-1.5 py-1.5 text-[11px]"
             >
-              <Eye className="h-3 w-3 shrink-0" />
-              <span>Details</span>
-            </button>
-            <button
-              onClick={() => setOrderModalOpen(true)}
-              disabled={ordering}
-              className="btn-primary rounded-lg px-2 py-2 text-[11px] disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-1 whitespace-nowrap"
-              title="Place order"
-            >
-              <ShoppingCart className="h-3 w-3 shrink-0" />
-              <span>{ordering ? "..." : "Order"}</span>
+              View
             </button>
             <button
               onClick={handleChat}
               disabled={chatLoading}
-              title="Chat with seller"
-              className="btn-secondary rounded-lg px-2 py-2 text-[11px] disabled:opacity-50 flex items-center justify-center gap-1 whitespace-nowrap hover:bg-blue-50 active:scale-95"
+              className="inline-flex items-center justify-center bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-slate-50 hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 rounded-lg px-1.5 py-1.5 text-[11px]"
             >
-              <MessageCircle className="h-3 w-3" />
-              <span>Chat</span>
+              Chat
             </button>
+            <button
+              onClick={() => setOrderModalOpen(true)}
+              disabled={ordering}
+              className="inline-flex items-center justify-center bg-gradient-primary text-white font-semibold shadow-sm hover:opacity-90 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 rounded-lg px-1.5 py-1.5 text-[11px]"
+            >
+              {ordering ? "..." : "Order"}
+            </button>
+
           </div>
         </div>
       </div>

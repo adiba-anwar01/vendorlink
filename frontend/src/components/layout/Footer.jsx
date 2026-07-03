@@ -1,24 +1,20 @@
 import { Store, Mail, Phone, HelpCircle, ShieldCheck, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const quickLinks = [
-  { label: 'Dashboard', to: '/dashboard' },
-  { label: 'My Products', to: '/products' },
-  { label: 'Explore Items', to: '/explore-items' },
-  { label: 'My Orders', to: '/my-orders' },
-  { label: 'Analytics', to: '/analytics' },
-  { label: 'Profile', to: '/profile' },
-];
+import useAuthStore from '@/features/auth/hooks/useAuthStore';
+import { QUICK_LINKS } from '@/constants/navigation';
 
 export default function Footer() {
+  const { vendor } = useAuthStore();
+  const displayEmail = vendor?.email || 'support@vendorlink.com';
+
   return (
-    <footer className="bg-gray-300 border-t border-gray-400/50 mt-auto">
+    <footer className="bg-gray-200 border-t border-gray-300/50 mt-auto">
       <div className="max-w-screen-xl mx-auto px-6 sm:px-8 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pb-4 border-b border-gray-400/50">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pb-4 border-b border-gray-300/50">
 
           <div className="space-y-2.5">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 bg-brand-600 rounded-xl flex items-center justify-center shrink-0">
                 <Store className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
@@ -35,7 +31,7 @@ export default function Footer() {
           <div className="space-y-2.5">
             <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Quick Links</h3>
             <ul className="space-y-1.5">
-              {quickLinks.map(({ label, to }) => (
+              {QUICK_LINKS.map(({ label, to }) => (
                 <li key={to}>
                   <Link to={to} className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                     {label}
@@ -50,13 +46,13 @@ export default function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center gap-2 text-sm text-gray-600">
                 <Mail className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                <a href="mailto:support@vendorlink.com" className="hover:text-gray-900 transition-colors">
-                  support@vendorlink.com
+                <a href={`mailto:${displayEmail}`} className="hover:text-gray-900 transition-colors">
+                  {displayEmail}
                 </a>
               </li>
               <li className="flex items-center gap-2 text-sm text-gray-600">
                 <Phone className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                <span>+1 (800) 000-0000</span>
+                <span>+91 XXXXXXXXXX</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-gray-600">
                 <HelpCircle className="w-3.5 h-3.5 text-gray-500 shrink-0" />
@@ -75,7 +71,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-2.5 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-xs text-gray-500">
-          <p>© 2026 VendorLink · Built for modern vendors</p>
+          <p>© 2026 VendorLink · Empowering local businesses</p>
           <p>All rights reserved.</p>
         </div>
       </div>

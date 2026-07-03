@@ -6,17 +6,17 @@ const protect = require("../middleware/authMiddleware");
 const {
   startConversation,
   acceptOffer,
-  rejectConversation,
-  getMyConversations
+  getMyConversations,
+  deleteConversation
 } = require("../controllers/conversationController");
 
 router.post("/:productId", protect, startConversation);
 
-router.get("/my", protect, getMyConversations);
+router.get("/myconvo", protect, getMyConversations);
 
 router.put("/accept/:id", protect, acceptOffer);
 
-router.put("/reject/:id", protect, rejectConversation);
+router.delete("/:id", protect, deleteConversation);
 
 
 module.exports = router;
