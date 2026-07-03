@@ -67,6 +67,142 @@ graph TD
 
 ---
 
+## 🔄 Full-Stack Data & Control Flows
+
+To understand how the Android client interacts with the backend server and MongoDB database, here is a breakdown of the primary end-to-end user flows in simple terms.
+
+### 1. Secure Authentication Flow
+
+When a user logs in or registers:
+1. **User Action**: The user enters their email and password in `LoginScreen`.
+2. **Android Presentation & Domain**: `AuthViewModel` calls `LoginUseCase`, which invokes the `AuthRepository.login()` interface.
+3. **Android Data Layer**: `AuthRepositoryImpl` sends a `POST` request to the backend `/api/auth/login` endpoint via Retrofit.
+4. **Backend Server (Node.js/Express)**: 
+   - Receives the request.
+   - Searches MongoDB for the user document.
+   - Compares the hashed password using `bcrypt`.
+   - Generates a JSON Web Token (JWT) using a secure secret key.
+   - Returns a response payload containing user metadata, token string, and expiration details.
+5. **Android Local Cache**: `AuthRepositoryImpl` receives the success response. The JWT is encrypted and securely saved inside the Android Keystore using `SecureTokenManager` (`EncryptedSharedPreferences`).
+6. **Subsequent API Requests**: For any subsequent protected request, the `AuthInterceptor` automatically intercepts the HTTP request and attaches the header `Authorization: Bearer <token>`.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User UI Screen
+    participant VM as AuthViewModel
+    participant Repo as AuthRepositoryImpl
+    participant API as Node.js Backend
+    participant DB as MongoDB Database
+    participant Enc as EncryptedSharedPreferences
+
+    User->>VM: Submit Credentials
+    VM->>Repo: login(email, password)
+    Repo->>API: HTTP POST /auth/login
+    API->>DB: Find user document
+    DB-->>API: User Document & hashed password
+    API->>API: Compare passwords & sign JWT
+    API-->>Repo: Token Response (JWT & Expiry)
+    Repo->>Enc: Save JWT safely
+    Repo-->>VM: Success Result
+    VM-->>User: Navigate to HomeScreen
+```
+
+---
+
+### 2. Location-Based Product Cataloging (Nearby Lookup)
+
+How the application determines which products are closest to the user:
+1. **Fetch Location**: The `DeviceLocationProvider` uses Google Fused Location API to capture the device's current latitude and longitude.
+2. **Android Data Call**: The `HomeViewModel` requests nearby listings by calling `GetProductsUseCase`, passing coordinates and the search radius (e.g. 5000 meters). This triggers a `GET` request to `/api/products/nearby` via Retrofit.
+3. **Backend Server (Node.js/Express)**:
+   - Receives the `lat`, `lng`, and `radius` query parameters.
+   - Queries MongoDB using a `$geoNear` aggregation pipeline on the geospatial `2dsphere` index configured on the `products` collection.
+   - MongoDB calculates the exact spherical distance of all listings and filters out items beyond the radius.
+   - Returns a JSON array of product listings, sorted by nearest distance.
+4. **Android Render**: `HomeViewModel` calculates any fallback local distances, updates the `HomeUiState`, and renders product cards displaying exact relative distances (e.g., `"1.4 km away"`).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI as HomeScreen
+    participant VM as HomeViewModel
+    participant GPS as DeviceLocationProvider
+    participant Repo as ProductRepositoryImpl
+    participant API as Node.js Backend
+    participant DB as MongoDB Database
+
+    UI->>VM: Page loaded / Refresh
+    VM->>GPS: Get Current GPS Coordinates
+    GPS-->>VM: Location (lat, lng)
+    VM->>Repo: searchNearby(lat, lng, radius)
+    Repo->>API: HTTP GET /products/nearby?lat=...&lng=...&radius=...
+    API->>DB: Aggregation query $geoNear
+    DB-->>API: Nearest products with calculated distance
+    API-->>Repo: Product List JSON Response
+    Repo-->>VM: Success List
+    VM->>VM: Filter open items & calculate local offsets
+    VM-->>UI: Expose StateFlow (Render ProductCards)
+```
+
+---
+
+### 3. Real-Time Price Negotiation Loop
+
+Bargaining and instant offer updates:
+1. **Initiate Conversation**: A buyer clicks "Message Seller" on a product detail view. `ConversationViewModel` calls `startConversationUseCase` (`POST /api/conversations/:productId`), returning a unique Conversation ID.
+2. **WebSocket Room Join**: The buyer's client uses `SocketManager` to connect to the Node.js server. It emits a `"joinChat"` websocket payload containing the Conversation ID.
+3. **Offer Placement**: The buyer types a custom amount and clicks "Send Offer". The client emits a `"newMessage"` WebSocket event with `messageType: "offer"` and the `offerPrice`.
+4. **Backend Processing**: 
+   - Node.js server intercepts the message event.
+   - Writes the message document containing the offer directly into MongoDB.
+   - Broadcasts the `"newMessage"` websocket event to all sockets currently joined in the conversation room.
+5. **Real-Time Render**: The seller's client receives the socket message. The UI updates instantly to display the offer with "Accept" or "Reject" CTAs.
+6. **Bargain Action (Accept/Reject)**: 
+   - If the seller accepts, the seller's app makes an HTTP request to `/api/conversations/accept/:id`.
+   - Node.js updates the status of the conversation thread to `"accepted"` in MongoDB.
+   - The server emits an `"offerUpdated"` socket event to the room.
+   - The buyer's client receives this socket update, locking the chat and enabling the checkout button.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Buyer as Buyer Client
+    participant Server as Socket.IO Node Server
+    actor Seller as Seller Client
+    participant DB as MongoDB Database
+
+    Buyer->>Server: joinChat(conversationId)
+    Seller->>Server: joinChat(conversationId)
+    
+    Buyer->>Server: Socket emit "newMessage" [Offer: ₹15,000]
+    Server->>DB: Store message document
+    Server-->>Seller: Socket broadcast "newMessage"
+    Note over Seller: UI displays Offer instantly
+    
+    Seller->>Server: HTTP PUT /conversations/accept/:id
+    Server->>DB: Update conversation status = "accepted"
+    Server->>Server: Generate system verification message
+    Server-->>Buyer: Socket broadcast "offerUpdated" [accepted]
+    Note over Buyer: UI locks & checkout option unlocks
+```
+
+---
+
+### 4. Checkout and Product Reservation Flow
+
+Finalizing orders and locking listings:
+1. **Order Check**: The buyer clicks "Proceed to Checkout" inside the accepted chat screen. The app opens `PurchaseScreen` where delivery details are filled.
+2. **Checkout Submission**: The buyer submits the order, causing a POST to `/api/orders/:productId`.
+3. **Backend Database Updates**:
+   - The backend checks for duplicate orders.
+   - Updates the corresponding product listing status to `"sold"` in MongoDB (making it unavailable in searches).
+   - Creates a new Order document in MongoDB.
+   - Returns the confirmed Order response.
+4. **UI Success state**: The app displays a success confirmation screen. When other users search for listings, this product no longer shows up.
+
+---
+
 ## 📂 Repository File Structure
 
 ```
