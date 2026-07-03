@@ -270,30 +270,6 @@ if (BuildConfig.DEBUG) {
 
 ---
 
-## 💬 Real-Time Negotiation Workflow
-
-The WebSocket integration in [SocketManager.kt](file:///e:/KotlinProjects/VL/app/src/main/java/com/arif/vl/data/remote/socket/SocketManager.kt) manages real-time bargaining flows. ViewModels connect to flows and map changes instantly:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Buyer
-    actor Seller
-    participant Server as Socket.IO Backend
-
-    Buyer->>Server: joinChat(conversationId)
-    Seller->>Server: joinChat(conversationId)
-    Buyer->>Server: emit("newMessage") [Offer: ₹15,000]
-    Server-->>Seller: on("newMessage")
-    Note over Seller: UI updates locally in real-time
-    Seller->>Server: emit("newMessage") [Text: "I accept"]
-    Seller->>Server: acceptConversation(conversationId)
-    Server-->>Buyer: on("offerUpdated") [Status: "accepted"]
-    Note over Buyer: Reservaton confirmed
-```
-
----
-
 ## 🚀 Setup & Build Instructions
 
 ### Prerequisites
