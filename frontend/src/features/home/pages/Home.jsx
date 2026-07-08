@@ -49,7 +49,7 @@ const heroSlides = [
   },
 ];
 
-export default function Dashboard() {
+export default function Home() {
   const navigate = useNavigate();
   const { vendor } = useAuthStore();
 

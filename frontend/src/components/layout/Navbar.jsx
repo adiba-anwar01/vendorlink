@@ -57,7 +57,7 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <NavLink
-            to="/dashboard"
+            to="/home"
             className="flex items-center gap-2.5 shrink-0"
           >
             <div className="w-8 h-8 bg-gradient-primary rounded-xl flex items-center justify-center shadow-sm">

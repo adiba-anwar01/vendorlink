@@ -13,9 +13,11 @@ import {
   getUserListedProducts,
   normalizeExploreItem,
 } from "../utils/exploreItemUtils";
+import { updateVendorLocation } from '@/features/auth/api/authApi';
 import useAuthStore from "@/features/auth/hooks/useAuthStore";
 import { PRODUCT_ORDERED_EVENT } from "@/utils/orderEvents";
 import { ALL_CATEGORIES } from "@/constants/product";
+import { toast } from "react-toastify";
 
 const ITEMS_PER_PAGE = 12;
 const METERS_PER_KM = 1000;
@@ -27,12 +29,14 @@ function getProductList(responseData) {
 }
 
 export default function ExploreItems() {
-  const vendor = useAuthStore((state) => state.vendor);
+  const { vendor, setVendor } = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [detectingLocation, setDetectingLocation] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   const filterBtnClass = (isActive) =>
     `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${isActive
@@ -57,6 +61,65 @@ export default function ExploreItems() {
   const [distanceFilter, setDistanceFilter] = useState(null);
   const [tempDistanceValue, setTempDistanceValue] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleSetLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setDetectingLocation(true);
+    setLocationError('');
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const latValue = pos.coords.latitude;
+        const lngValue = pos.coords.longitude;
+
+        try {
+          await updateVendorLocation({
+            latitude: latValue,
+            longitude: lngValue,
+          });
+
+          setVendor({
+            ...vendor,
+            location: {
+              type: 'Point',
+              coordinates: [lngValue, latValue],
+            },
+            latitude: latValue,
+            longitude: lngValue,
+            lat: latValue,
+            lng: lngValue,
+          });
+          
+          toast.success("Location set successfully!");
+        } catch (err) {
+          setLocationError(err.response?.data?.message || 'Failed to update location.');
+        } finally {
+          setDetectingLocation(false);
+        }
+      },
+      (error) => {
+        setDetectingLocation(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError('Location permission denied.');
+          return;
+        }
+        if (error.code === error.POSITION_UNAVAILABLE) {
+          setLocationError('Location is unavailable.');
+          return;
+        }
+        if (error.code === error.TIMEOUT) {
+          setLocationError('Location request timed out.');
+          return;
+        }
+        setLocationError('Unable to detect your location.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
 
   const refCoords = useMemo(() => {
     if (vendor?.location?.coordinates) {
@@ -180,14 +243,30 @@ export default function ExploreItems() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Explore Items</h1>
-        <p className="text-sm text-gray-400 mt-0.5">
-          Browse user-listed items nearby — filter by distance or search
-        </p>
-      </div>
+      <div className="flex flex-col gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Explore Items</h1>
+          <div className="flex items-start sm:items-center justify-between mt-0.5 gap-4">
+            <p className="text-sm text-gray-400">
+              Browse user-listed items nearby — filter by distance or search
+            </p>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <button
+                onClick={handleSetLocation}
+                disabled={detectingLocation}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-[0.625rem] bg-gradient-primary text-white text-xs font-medium whitespace-nowrap hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                {detectingLocation ? 'Setting Location...' : (refCoords ? 'Update My Location' : 'Set My Location')}
+              </button>
+              {locationError && (
+                <p className="text-xs text-red-500 max-w-[200px] text-right">{locationError}</p>
+              )}
+            </div>
+          </div>
+        </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-md shadow-gray-200/50 p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-md shadow-gray-200/50 p-5">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
@@ -276,15 +355,9 @@ export default function ExploreItems() {
               <span>40 km</span>
               <span>50 km</span>
             </div>
-            {!refCoords && (
-              <p className="text-xs text-amber-600 flex items-center gap-1.5 mt-1">
-                <MapPin className="w-3.5 h-3.5 shrink-0" />
-                Location not set — distance filter unavailable. Add your
-                location in Profile.
-              </p>
-            )}
           </div>
         </div>
+      </div>
       </div>
 
       <InputWithIcon

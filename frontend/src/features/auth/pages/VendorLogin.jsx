@@ -22,7 +22,7 @@ export default function VendorLogin() {
       const { user, token } = res.data;
       login(token, user);
       toast.success('Login successful!');
-      navigate('/dashboard', { replace: true });
+      navigate('/home', { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed. Try again.');
     } finally {

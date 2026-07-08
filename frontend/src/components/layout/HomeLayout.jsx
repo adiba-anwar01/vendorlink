@@ -4,7 +4,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import { PageLoader } from '@/components/ui';
 
-export default function DashboardLayout() {
+export default function HomeLayout() {
   const location = useLocation();
 
   useEffect(() => {

@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
 </p>
 
-**VendorLink** is a scalable full-stack **web application** built with the MERN stack that connects users and local vendors through a unified digital marketplace. The platform enables users to discover, buy, sell, and negotiate products while providing vendors with powerful tools to manage listings, orders, and business insights. It features geolocation-based product discovery, real-time messaging, interactive offer negotiation, end-to-end order lifecycle management, secure authentication, and an analytics-driven vendor dashboard. Designed with a modular, feature-based architecture and modern software engineering practices, VendorLink emphasizes scalability, maintainability, performance, and a seamless user experience.
+**VendorLink** is a scalable full-stack **web application** built with the MERN stack that connects users and local vendors through a unified digital marketplace. The platform enables users to discover, buy, sell, and negotiate products while providing vendors with powerful tools to manage listings, orders, and business insights. It features geolocation-based product discovery, real-time messaging, interactive offer negotiation, end-to-end order lifecycle management, secure authentication, a vendor home page, and dedicated analytics. Designed with a modular, feature-based architecture and modern software engineering practices, VendorLink emphasizes scalability, maintainability, performance, and a seamless user experience.
 
 ## System Architecture
 
@@ -119,7 +119,7 @@ sequenceDiagram
 
     Note over User, Axios: 2. Session Persistence & Token Injection
     User->>User: Save Token to localStorage & Zustand state
-    User->>Router: Access protected route (e.g. /dashboard)
+    User->>Router: Access protected route (e.g. /home)
     Router->>Router: Check Zustand store (Permit navigation)
     User->>Axios: Call protected API endpoint
     Axios->>Axios: Read Token & Inject Bearer header
@@ -245,7 +245,7 @@ sequenceDiagram
 ### 3. Modularity & Maintainability
 * **Vite Path Aliasing**: Configured compiler path alias (`@/` -> `src/`) to eliminate nested relative imports (e.g., replacing `../../../utils/` with `@/utils/`), making imports highly readable.
 * **Barrel Export Pattern**: Implemented clean barrel exports (`index.js`) for generic UI components (`Badge`, `Modal`, `InputWithIcon`, etc.) and Layout features, facilitating modular imports across features.
-* **Feature Encapsulation**: Organized directory structures into separate domains (`auth`, `conversations`, `explore`, `orders`, `products`, `profile`, `dashboard`) so code grows horizontally without tight coupling.
+* **Feature Encapsulation**: Organized directory structures into separate domains (`auth`, `conversations`, `explore`, `orders`, `products`, `profile`, `home`) so code grows horizontally without tight coupling.
 
 ---
 
@@ -261,13 +261,13 @@ frontend/
 │   ├── api/                      # Axios central instance & interceptors
 │   ├── assets/                   # Local image and media assets
 │   ├── components/               # Globally shared layouts & UI components
-│   │   ├── layout/               # Layout shells (Dashboard, Navbar, Footer)
+│   │   ├── layout/               # Layout shells (Home, Navbar, Footer)
 │   │   └── ui/                   # Reusable visual components (Badge, Modal, Inputs)
 │   ├── constants/                # Project-wide static configurations & navigation maps
 │   ├── features/                 # Modular, encapsulated domain features
 │   │   ├── auth/                 # Sign-in, registration, and location detection
 │   │   ├── conversations/        # Real-time chat list, chat pane, and message bubbles
-│   │   ├── dashboard/            # Vendor statistics and graph visualization
+│   │   ├── home/                 # Vendor statistics and graph visualization
 │   │   ├── explore/              # Geolocation-aware search and map actions
 │   │   ├── orders/               # Sales tracking & order fulfillment workflows
 │   │   ├── products/             # Inventory creation, editing, and listing
