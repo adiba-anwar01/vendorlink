@@ -38,7 +38,6 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  console.log(`Socket connected: ${socket.id} (User: ${socket.user.id})`);
 
   socket.on("joinChat", async (conversationId) => {
     try {
@@ -50,27 +49,21 @@ io.on("connection", (socket) => {
       
       if (isBuyer || isSeller) {
         socket.join(conversationId);
-        console.log(`Socket ${socket.id} joined room ${conversationId}`);
-      } else {
-        console.log(`Unauthorized join attempt for room ${conversationId} by user ${socket.user.id}`);
       }
     } catch (error) {
-      console.error("Error joining chat room:", error);
     }
   });
 
   socket.on("leaveChat", (conversationId) => {
     socket.leave(conversationId);
-    console.log(`Socket ${socket.id} left room ${conversationId}`);
   });
 
   socket.on("disconnect", () => {
-    console.log(`Socket disconnected: ${socket.id}`);
   });
 });
 
 app.use(cors());
-app.use(express.json()); // VERY IMPORTANT (reads JSON body)
+app.use(express.json());
 
 connectDB();
 

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Image, Tag, User, MapPin, Package, Map } from 'lucide-react';
 import { getProduct } from '@/features/products/api/productApi';
 import { formatPrice } from '@/utils/priceUtils';
-import { normalizeExploreItem } from '../utils/exploreItemUtils';
+import { normalizeExploreItem } from '@/features/explore/utils/exploreItemUtils';
 import OrderModal from '@/features/orders/components/OrderModal';
 import { useOrderFlow } from '@/features/orders/hooks/useOrderFlow';
 import useAuthStore from '@/features/auth/hooks/useAuthStore';
@@ -119,8 +119,8 @@ export default function UserItemDetail() {
                   key={img || index}
                   onClick={() => setActiveImg(index)}
                   className={`h-16 w-16 overflow-hidden rounded-xl border-2 transition-colors ${index === activeImg
-                      ? 'border-brand-500 ring-2 ring-brand-200'
-                      : 'border-gray-200 hover:border-gray-400'
+                    ? 'border-brand-500 ring-2 ring-brand-200'
+                    : 'border-gray-200 hover:border-gray-400'
                     }`}
                 >
                   <img src={img} alt={`thumb-${index}`} className="h-full w-full object-cover" />

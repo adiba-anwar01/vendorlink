@@ -16,11 +16,6 @@ exports.uploadImage = async (req, res) => {
       !process.env.CLOUDINARY_API_KEY ||
       !process.env.CLOUDINARY_API_SECRET
     ) {
-      console.error("Cloudinary credentials missing:", {
-        name: !!cloudName,
-        key: !!process.env.CLOUDINARY_API_KEY,
-        secret: !!process.env.CLOUDINARY_API_SECRET,
-      });
       return res.status(500).json({
         message: "Cloudinary not configured",
       });
@@ -42,7 +37,6 @@ exports.uploadImage = async (req, res) => {
         },
         (error, uploadResult) => {
           if (error) {
-            console.error("Cloudinary upload error:", error);
             reject(error);
           } else {
             resolve(uploadResult);
@@ -51,7 +45,6 @@ exports.uploadImage = async (req, res) => {
       );
 
       uploadStream.on("error", (error) => {
-        console.error("Upload stream error:", error);
         reject(error);
       });
 
@@ -63,7 +56,6 @@ exports.uploadImage = async (req, res) => {
       publicId: result.public_id,
     });
   } catch (error) {
-    console.error("uploadImage error:", error);
     res.status(500).json({
       message: "Image upload failed",
       error: error.message,
