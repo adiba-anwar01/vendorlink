@@ -93,7 +93,7 @@ export default function VendorLogin() {
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link to="/register" className="font-semibold text-gradient-primary hover:opacity-80 transition-colors">
               Register here
             </Link>

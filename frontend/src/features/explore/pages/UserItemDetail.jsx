@@ -38,26 +38,26 @@ export default function UserItemDetail() {
   useEffect(() => {
     let isMounted = true;
 
-    getProduct(id)
-      .then((res) => {
-        if (!isMounted) return;
-        const normalized = normalizeExploreItem(res.data);
-        if (isMounted) {
-          setItem(normalized.sellerRole === 'user' ? normalized : null);
-          setActiveImg(0);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setItem(null);
-          setActiveImg(0);
-        }
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
+    getProduct(id).
+    then((res) => {
+      if (!isMounted) return;
+      const normalized = normalizeExploreItem(res.data);
+      if (isMounted) {
+        setItem(normalized.sellerRole === 'user' ? normalized : null);
+        setActiveImg(0);
+      }
+    }).
+    catch(() => {
+      if (isMounted) {
+        setItem(null);
+        setActiveImg(0);
+      }
+    }).
+    finally(() => {
+      if (isMounted) setLoading(false);
+    });
 
-    return () => { isMounted = false; };
+    return () => {isMounted = false;};
   }, [id]);
 
   const images = item?.images?.length ? item.images : item?.image ? [item.image] : [];
@@ -65,7 +65,7 @@ export default function UserItemDetail() {
   const categoryColors = {
     Mobile: { bg: 'bg-purple-100', text: 'text-purple-700' },
     Electronics: { bg: 'bg-brand-100', text: 'text-gradient-primary' },
-    Furniture: { bg: 'bg-amber-100', text: 'text-amber-700' },
+    Furniture: { bg: 'bg-amber-100', text: 'text-amber-700' }
   };
   const catStyle = categoryColors[item?.category] || { bg: 'bg-gray-100', text: 'text-gray-600' };
 
@@ -73,8 +73,8 @@ export default function UserItemDetail() {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="animate-pulse text-sm text-gray-400">Loading item...</p>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!item) {
@@ -84,8 +84,8 @@ export default function UserItemDetail() {
         <button onClick={() => navigate('/explore-items')} className={btnPrimary}>
           Back to Explore
         </button>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -98,45 +98,45 @@ export default function UserItemDetail() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div className="space-y-3">
           <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 shadow-sm">
-            {images.length > 0 ? (
-              <img
-                src={images[activeImg]}
-                alt={item.title}
-                className="h-full w-full object-cover transition-all duration-300"
-              />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-300">
+            {images.length > 0 ?
+            <img
+              src={images[activeImg]}
+              alt={item.title}
+              className="h-full w-full object-cover transition-all duration-300" /> :
+
+
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-300">
                 <Image className="h-14 w-14" />
                 <p className="text-sm">No image available</p>
               </div>
-            )}
+            }
           </div>
 
-          {images.length > 1 && (
-            <div className="flex flex-wrap gap-2">
-              {images.map((img, index) => (
-                <button
-                  key={img || index}
-                  onClick={() => setActiveImg(index)}
-                  className={`h-16 w-16 overflow-hidden rounded-xl border-2 transition-colors ${index === activeImg
-                    ? 'border-brand-500 ring-2 ring-brand-200'
-                    : 'border-gray-200 hover:border-gray-400'
-                    }`}
-                >
+          {images.length > 1 &&
+          <div className="flex flex-wrap gap-2">
+              {images.map((img, index) =>
+            <button
+              key={img || index}
+              onClick={() => setActiveImg(index)}
+              className={`h-16 w-16 overflow-hidden rounded-xl border-2 transition-colors ${index === activeImg ?
+              'border-brand-500 ring-2 ring-brand-200' :
+              'border-gray-200 hover:border-gray-400'}`
+              }>
+              
                   <img src={img} alt={`thumb-${index}`} className="h-full w-full object-cover" />
                 </button>
-              ))}
+            )}
             </div>
-          )}
+          }
 
           <div className="flex flex-wrap gap-2">
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${catStyle.bg} ${catStyle.text}`}>
               {item.category}
             </span>
             <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${item.condition === 'New' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'
-                }`}
-            >
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${item.condition === 'New' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`
+              }>
+              
               {item.condition}
             </span>
           </div>
@@ -162,47 +162,47 @@ export default function UserItemDetail() {
                 <Package className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
                 <span>Condition: <strong>{item.condition}</strong></span>
               </div>
-              {distanceKm !== null && (
-                <div className="flex items-start gap-2.5 text-sm text-gray-600">
+              {distanceKm !== null &&
+              <div className="flex items-start gap-2.5 text-sm text-gray-600">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
                   <span>Distance: <strong>{distanceKm.toFixed(1)} km away</strong></span>
                 </div>
-              )}
-              {item.lat != null && item.lng != null && (
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-2.5 px-2.5 py-1.5 text-xs font-semibold text-gray-700 bg-white rounded-full border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-4px_rgba(168,85,247,0.15)] hover:-translate-y-0.5 hover:border-brand-300 transition-all duration-300 group"
-                >
+              }
+              {item.lat != null && item.lng != null &&
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 mt-2.5 px-2.5 py-1.5 text-xs font-semibold text-gray-700 bg-white rounded-full border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_-4px_rgba(168,85,247,0.15)] hover:-translate-y-0.5 hover:border-brand-300 transition-all duration-300 group">
+                
                   <div className="flex items-center justify-center w-5 h-5 rounded-full bg-brand-50 text-brand-600 group-hover:bg-brand-100 transition-colors">
                     <Map className="w-2.5 h-2.5 group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <span className="group-hover:text-brand-600 transition-colors">View on Map</span>
                 </a>
-              )}
+              }
             </div>
 
-            {item.description && (
-              <div className="border-t border-gray-100 pt-3">
+            {item.description &&
+            <div className="border-t border-gray-100 pt-3">
                 <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Description
                 </p>
                 <p className="text-sm leading-relaxed text-gray-700">{item.description}</p>
               </div>
-            )}
+            }
 
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => navigate(-1)}
-                className={`${btnSecondary} flex-1 flex items-center justify-center gap-2`}
-              >
+                className={`${btnSecondary} flex-1 flex items-center justify-center gap-2`}>
+                
                 Go Back
               </button>
               <button
                 onClick={() => orderFlow.openOrderFlow(item.id)}
-                className={`${btnPrimary} flex-1 flex items-center justify-center gap-2`}
-              >
+                className={`${btnPrimary} flex-1 flex items-center justify-center gap-2`}>
+                
                 <ShoppingCart className="h-4 w-4 shrink-0" />
                 <span>Place Order</span>
               </button>
@@ -211,13 +211,13 @@ export default function UserItemDetail() {
         </div>
       </div>
 
-      {orderFlow.isOpen && (
-        <OrderModal
-          item={orderFlow.item}
-          onClose={orderFlow.closeOrderFlow}
-          onConfirm={orderFlow.handleConfirmOrder}
-        />
-      )}
-    </div>
-  );
+      {orderFlow.isOpen &&
+      <OrderModal
+        item={orderFlow.item}
+        onClose={orderFlow.closeOrderFlow}
+        onConfirm={orderFlow.handleConfirmOrder} />
+
+      }
+    </div>);
+
 }

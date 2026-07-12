@@ -10,8 +10,8 @@ export const initializeSocket = (token) => {
 
   socket = io(SOCKET_URL, {
     auth: {
-      token,
-    },
+      token
+    }
   });
 
   socket.on('connect', () => {
@@ -19,7 +19,7 @@ export const initializeSocket = (token) => {
     readyCallbacks.length = 0;
   });
 
-  socket.on('connect_error', (error) => {
+  socket.on('connect_error', () => {
   });
 
   return socket;

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MessageSquare,
@@ -146,7 +146,7 @@ export default function Home() {
       window.removeEventListener(PRODUCT_ORDERED_EVENT, handleProductOrdered);
   }, []);
 
-  const refreshOrders = async () => {
+  const refreshOrders = useCallback(async () => {
     try {
       const res = await getMyConversations();
       const list = res.data?.conversations ?? res.data ?? [];
@@ -163,8 +163,9 @@ export default function Home() {
         date: order.createdAt,
       })));
     } catch {
+      console.error("Failed to refresh orders in background");
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadOrdersRef.current = refreshOrders;
@@ -337,7 +338,7 @@ export default function Home() {
               )
             }
             className="flex items-center gap-2 text-sm font-medium text-gray-600
-              hover:text-gradient-primary bg-gray-50 border border-gray-200 hover:border-brand-300
+              hover:text-brand-600 bg-gray-50 border border-gray-200 hover:border-brand-300
               px-3.5 py-2 rounded-xl transition-all self-start sm:self-auto"
           >
             <ArrowUpDown className="w-4 h-4" />

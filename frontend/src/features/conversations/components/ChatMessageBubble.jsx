@@ -1,7 +1,7 @@
 import { formatTime } from '@/utils/dateUtils';
 import { formatPrice } from '@/utils/priceUtils';
 
-export default function ChatMessageBubble({ message, isSelf, offerStatus }) {
+export default function ChatMessageBubble({ message, isSelf }) {
   const isOffer = message.messageType === 'offer';
   const isSystem = message.messageType === 'system';
 

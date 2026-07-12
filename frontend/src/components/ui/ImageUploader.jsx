@@ -7,7 +7,7 @@ export default function ImageUploader({
   value = [],
   onChange,
   disabled = false,
-  onUploadingChange,
+  onUploadingChange
 }) {
   const inputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
@@ -25,7 +25,7 @@ export default function ImageUploader({
           uploadedImages.push({
             id: `${Date.now()}-${Math.random()}`,
             url: res.data.url,
-            publicId: res.data.publicId,
+            publicId: res.data.publicId
           });
         } catch {
           toast.error(`Failed to upload ${file.name}`);
@@ -35,7 +35,7 @@ export default function ImageUploader({
       if (uploadedImages.length > 0) {
         onChange([...value, ...uploadedImages]);
         toast.success(
-          `${uploadedImages.length} image(s) uploaded successfully!`,
+          `${uploadedImages.length} image(s) uploaded successfully!`
         );
       }
     } finally {
@@ -67,19 +67,19 @@ export default function ImageUploader({
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-8 transition-colors ${
-          uploading
-            ? 'border-gray-300 bg-gray-50 cursor-not-allowed opacity-60'
-            : dragging
-              ? 'border-gray-400 bg-gray-50'
-              : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50 cursor-pointer'
-        }`}
-      >
+        uploading ?
+        'border-gray-300 bg-gray-50 cursor-not-allowed opacity-60' :
+        dragging ?
+        'border-gray-400 bg-gray-50' :
+        'border-gray-200 hover:border-gray-400 hover:bg-gray-50 cursor-pointer'}`
+        }>
+        
         <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-          {uploading ? (
-            <Loader className="w-5 h-5 text-gray-500 animate-spin" />
-          ) : (
-            <Upload className="w-5 h-5 text-gray-500" />
-          )}
+          {uploading ?
+          <Loader className="w-5 h-5 text-gray-500 animate-spin" /> :
+
+          <Upload className="w-5 h-5 text-gray-500" />
+          }
         </div>
         <p className="text-sm text-gray-600">
           <span className="font-medium text-gray-900">
@@ -97,36 +97,36 @@ export default function ImageUploader({
         multiple
         disabled={uploading || disabled}
         className="hidden"
-        onChange={(e) => uploadFiles(e.target.files)}
-      />
+        onChange={(e) => uploadFiles(e.target.files)} />
+      
 
-      {value.length > 0 && (
-        <div className="grid grid-cols-4 gap-3">
-          {value.map((img) => (
-            <div
-              key={img.id}
-              className="relative group aspect-square rounded-xl overflow-hidden bg-gray-100"
-            >
+      {value.length > 0 &&
+      <div className="grid grid-cols-4 gap-3">
+          {value.map((img) =>
+        <div
+          key={img.id}
+          className="relative group aspect-square rounded-xl overflow-hidden bg-gray-100">
+          
               <img
-                src={img.url}
-                alt=""
-                className="w-full h-full object-cover"
-              />
+            src={img.url}
+            alt=""
+            className="w-full h-full object-cover" />
+          
               <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeImage(img.id);
-                }}
-                disabled={uploading}
-                className="absolute top-1.5 right-1.5 w-5 h-5 bg-gray-900/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-              >
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeImage(img.id);
+            }}
+            disabled={uploading}
+            className="absolute top-1.5 right-1.5 w-5 h-5 bg-gray-900/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50">
+            
                 <X className="w-3 h-3 text-white" />
               </button>
             </div>
-          ))}
+        )}
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }

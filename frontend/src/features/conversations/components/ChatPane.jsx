@@ -5,8 +5,8 @@ import {
   getMessages,
   sendMessage,
   acceptConversation,
-  deleteConversation,
-} from '../api/conversationApi';
+  deleteConversation } from
+'../api/conversationApi';
 import ChatMessageBubble from './ChatMessageBubble';
 import useAuthStore from '@/features/auth/hooks/useAuthStore';
 import useOfferStateStore from '@/features/orders/hooks/useOfferStateStore';
@@ -34,7 +34,7 @@ export default function ChatPane({
   conversationId,
   conversation,
   onBack,
-  onDeleteConversation,
+  onDeleteConversation
 }) {
   const { vendor } = useAuthStore();
   const soldProducts = useOfferStateStore((s) => s.soldProducts);
@@ -67,8 +67,11 @@ export default function ChatPane({
   if (conversationId !== prevConversationId) {
     setPrevConversationId(conversationId);
     setMenuOpen(false);
-    hasOpenedConversationRef.current = false;
   }
+
+  useEffect(() => {
+    hasOpenedConversationRef.current = false;
+  }, [conversationId]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -103,7 +106,7 @@ export default function ChatPane({
     }
 
     load();
-    return () => { isMounted = false; };
+    return () => {isMounted = false;};
   }, [conversationId]);
 
   useEffect(() => {
@@ -114,7 +117,7 @@ export default function ChatPane({
     const handleNewMessage = (newMessage) => {
       const msgConvId = normalizeId(newMessage.conversation?._id ?? newMessage.conversation ?? newMessage.conversationId);
       if (msgConvId && msgConvId !== conversationId) {
-        return; // Ignore messages from other conversations
+        return;
       }
       setMessages((prev) => {
         const msgId = getMessageId(newMessage);
@@ -159,16 +162,16 @@ export default function ChatPane({
   const productSoldState = productId ? soldProducts[productId] : null;
   const isVendor = isVendorUser(activeConversation, vendor);
 
-  const chatPartner = isVendor
-    ? getDisplayName(activeConversation?.buyer, 'User')
-    : getDisplayName(activeConversation?.seller, 'User');
+  const chatPartner = isVendor ?
+  getDisplayName(activeConversation?.buyer, 'User') :
+  getDisplayName(activeConversation?.seller, 'User');
 
   const isProductSold = Boolean(productSoldState || product.status === 'sold');
   const areNewOffersDisabled = isProductSold;
 
   useEffect(() => {
     if (areNewOffersDisabled && offerMode) {
-      setOfferMode(false);
+      setTimeout(() => setOfferMode(false), 0);
     }
   }, [areNewOffersDisabled, offerMode]);
 
@@ -187,21 +190,21 @@ export default function ChatPane({
     [messages]
   );
 
-  const mergedMessages = (!isProductSold || !productId)
-    ? messages
-    : (() => {
-      const systemId = `system-sold-${productId}`;
-      if (messages.some((m) => getMessageId(m) === systemId)) return messages;
-      return [
-        ...messages,
-        {
-          id: systemId,
-          messageType: 'system',
-          text: 'Conversation closed because deal is final.',
-          createdAt: productSoldState?.soldAt || new Date().toISOString()
-        },
-      ];
-    })();
+  const mergedMessages = !isProductSold || !productId ?
+  messages :
+  (() => {
+    const systemId = `system-sold-${productId}`;
+    if (messages.some((m) => getMessageId(m) === systemId)) return messages;
+    return [
+    ...messages,
+    {
+      id: systemId,
+      messageType: 'system',
+      text: 'Conversation closed because deal is final.',
+      createdAt: productSoldState?.soldAt || new Date().toISOString()
+    }];
+
+  })();
 
   useEffect(() => {
     const container = messagesContainerRef.current;
@@ -210,7 +213,7 @@ export default function ChatPane({
     const behavior = hasOpenedConversationRef.current ? 'smooth' : 'auto';
     container.scrollTo({
       top: container.scrollHeight,
-      behavior,
+      behavior
     });
     hasOpenedConversationRef.current = true;
   }, [mergedMessages]);
@@ -220,7 +223,9 @@ export default function ChatPane({
       const res = await getMessages(conversationId);
       const list = res.data?.messages ?? res.data ?? [];
       setMessages(Array.isArray(list) ? list : []);
-    } catch { }
+    } catch {
+      console.error("Failed to refresh messages");
+    }
   }
 
   async function handleSend() {
@@ -291,7 +296,7 @@ export default function ChatPane({
 
   async function handleAccept() {
     if (!latestOffer || !productId || isProductSold) return;
-    if (!isVendor) { toast.error('Only the seller can accept this offer.'); return; }
+    if (!isVendor) {toast.error('Only the seller can accept this offer.');return;}
     setActing(true);
     try {
       await acceptConversation(conversationId);
@@ -326,14 +331,14 @@ export default function ChatPane({
   return (
     <div className="flex flex-col h-full">
       <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-3 bg-gradient-to-r from-brand-50 to-white shrink-0">
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors md:hidden"
-          >
+        {onBack &&
+        <button
+          onClick={onBack}
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors md:hidden">
+          
             <ArrowLeft className="w-4 h-4 text-gray-500" />
           </button>
-        )}
+        }
 
         <div className="w-9 h-9 bg-brand-100 rounded-xl flex items-center justify-center text-xs font-bold text-gradient-primary shrink-0">
           {chatPartner.slice(0, 2).toUpperCase()}
@@ -353,56 +358,56 @@ export default function ChatPane({
               type="button"
               onClick={() => setMenuOpen((prev) => !prev)}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Conversation actions"
-            >
+              aria-label="Conversation actions">
+              
               <MoreVertical className="w-4 h-4 text-gray-500" />
             </button>
 
-            {menuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-32 rounded-xl border border-gray-200 bg-white shadow-lg py-1 z-10">
+            {menuOpen &&
+            <div className="absolute right-0 top-full mt-2 w-32 rounded-xl border border-gray-200 bg-white shadow-lg py-1 z-10">
                 <button
-                  type="button"
-                  onClick={handleDeleteConversation}
-                  disabled={deleting}
-                  className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-                >
+                type="button"
+                onClick={handleDeleteConversation}
+                disabled={deleting}
+                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 disabled:opacity-50">
+                
                   {deleting ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
-            )}
+            }
           </div>
 
-          {isVendor && (
-            <div className="flex items-center gap-2">
+          {isVendor &&
+          <div className="flex items-center gap-2">
               <button
-                onClick={handleAccept}
-                disabled={areOfferActionsDisabled}
-                className={`${btnPrimary} text-xs py-1.5 px-3 disabled:opacity-50`}
-              >
+              onClick={handleAccept}
+              disabled={areOfferActionsDisabled}
+              className={`${btnPrimary} text-xs py-1.5 px-3 disabled:opacity-50`}>
+              
                 Accept
               </button>
             </div>
-          )}
+          }
         </div>
 
-        {isProductSold && (
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 shrink-0">
+        {isProductSold &&
+        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 shrink-0">
             Sold
           </span>
-        )}
+        }
       </div>
 
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-5 space-y-3 bg-gray-50/40 scrollbar-thin"
-      >
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center h-full mt-8">
+        className="flex-1 overflow-y-auto p-5 space-y-3 bg-gray-50/40 scrollbar-thin">
+        
+        {loading ?
+        <div className="flex-1 flex items-center justify-center h-full mt-8">
             <p className="text-sm text-gray-400 animate-pulse">Loading messages...</p>
-          </div>
-        ) : mergedMessages.length === 0 && (
-          <p className="text-center text-xs text-gray-400 mt-8">No messages yet — say hello!</p>
-        )}
+          </div> :
+        mergedMessages.length === 0 &&
+        <p className="text-center text-xs text-gray-400 mt-8">No messages yet — say hello!</p>
+        }
 
         {mergedMessages.map((message) => {
           const msgId = getMessageId(message);
@@ -422,20 +427,20 @@ export default function ChatPane({
               message={message}
               isSelf={getSenderId(message) === currentUserId}
               offerStatus={offerStatus}
-              productSold={isProductSold && message.messageType !== 'system'}
-            />
-          );
+              productSold={isProductSold && message.messageType !== 'system'} />);
+
+
         })}
-        {activeConversation?.status === 'accepted' && !isProductSold && !isVendor && latestOffer && (
-          <div className="flex justify-start mt-2 mb-2">
+        {activeConversation?.status === 'accepted' && !isProductSold && !isVendor && latestOffer &&
+        <div className="flex justify-start mt-2 mb-2">
             <button
-              onClick={() => orderFlow.openOrderFlow(productId, latestOffer.offerPrice)}
-              className="px-5 py-2.5 bg-gradient-primary text-black rounded-xl text-sm font-bold hover:opacity-90 transition-colors shadow-sm"
-            >
+            onClick={() => orderFlow.openOrderFlow(productId, latestOffer.offerPrice)}
+            className="px-5 py-2.5 bg-gradient-primary text-black rounded-xl text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
+            
               Proceed To Order
             </button>
           </div>
-        )}
+        }
         <div />
       </div>
 
@@ -444,24 +449,24 @@ export default function ChatPane({
           <button
             onClick={() => setOfferMode((v) => !v)}
             disabled={loading || areNewOffersDisabled}
-            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all duration-300 ${offerMode
-              ? 'bg-gradient-primary border-transparent text-white shadow-sm'
-              : `bg-gray-50 border-gray-200 text-gray-500 ${!areNewOffersDisabled ? 'hover:bg-brand-50 hover:border-brand-200 hover:text-brand-600' : ''}`
-              } disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap`}
-          >
+            className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all duration-300 ${offerMode ?
+            'bg-gradient-primary border-transparent text-white shadow-sm' :
+            `bg-gray-50 border-gray-200 text-gray-500 ${!areNewOffersDisabled ? 'hover:bg-brand-50 hover:border-brand-200 hover:text-brand-600' : ''}`} disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap`
+            }>
+            
             <IndianRupee className="w-3 h-3" />
             {offerMode ? 'Offer Mode ON' : 'Make Offer'}
           </button>
-          {offerMode && (
-            <input
-              type="number"
-              placeholder="Offer price..."
-              value={offerPrice}
-              onChange={(e) => setOfferPrice(e.target.value)}
-              disabled={areNewOffersDisabled}
-              className={`border border-gray-200 rounded-[0.625rem] px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all duration-300 w-48 disabled:opacity-50 disabled:cursor-not-allowed`}
-            />
-          )}
+          {offerMode &&
+          <input
+            type="number"
+            placeholder="Offer price..."
+            value={offerPrice}
+            onChange={(e) => setOfferPrice(e.target.value)}
+            disabled={areNewOffersDisabled}
+            className={`border border-gray-200 rounded-[0.625rem] px-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all duration-300 w-48 disabled:opacity-50 disabled:cursor-not-allowed`} />
+
+          }
         </div>
 
         <div className="flex items-end gap-3">
@@ -470,34 +475,34 @@ export default function ChatPane({
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={loading ? 'Loading...' : (isProductSold ? 'Chat closed (Product sold)' : (offerMode ? 'Sending offer — press Send' : 'Type a message... (Enter to send)'))}
+            placeholder={loading ? 'Loading...' : isProductSold ? 'Chat closed (Product sold)' : offerMode ? 'Sending offer — press Send' : 'Type a message... (Enter to send)'}
             disabled={loading || isProductSold}
-            className={`${inputField} resize-none flex-1 min-h-[40px] max-h-28 disabled:opacity-50 disabled:cursor-not-allowed`}
-          />
+            className={`${inputField} resize-none flex-1 min-h-[40px] max-h-28 disabled:opacity-50 disabled:cursor-not-allowed`} />
+          
           <button
             onClick={handleSend}
             disabled={
-              loading ||
-              isProductSold ||
-              sending ||
-              (offerMode
-                ? areNewOffersDisabled || !offerPrice || Number(offerPrice) <= 0
-                : !text.trim())
+            loading ||
+            isProductSold ||
+            sending || (
+            offerMode ?
+            areNewOffersDisabled || !offerPrice || Number(offerPrice) <= 0 :
+            !text.trim())
             }
-            className={`${btnPrimary} shrink-0 p-2.5 disabled:opacity-40 disabled:cursor-not-allowed`}
-          >
+            className={`${btnPrimary} shrink-0 p-2.5 disabled:opacity-40 disabled:cursor-not-allowed`}>
+            
             <Send className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {orderFlow.isOpen && (
-        <OrderModal
-          item={orderFlow.item}
-          onClose={orderFlow.closeOrderFlow}
-          onConfirm={orderFlow.handleConfirmOrder}
-        />
-      )}
-    </div>
-  );
+      {orderFlow.isOpen &&
+      <OrderModal
+        item={orderFlow.item}
+        onClose={orderFlow.closeOrderFlow}
+        onConfirm={orderFlow.handleConfirmOrder} />
+
+      }
+    </div>);
+
 }

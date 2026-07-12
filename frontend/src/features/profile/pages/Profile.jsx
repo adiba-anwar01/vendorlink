@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { User, Lock, Save, Eye, EyeOff, MapPin, Mail, Store } from 'lucide-react';
+import { useState } from 'react';
+import { User, Save, MapPin, Mail, Store } from 'lucide-react';
 import useAuthStore from '@/features/auth/hooks/useAuthStore';
-import { Modal, InputWithIcon } from '@/components/ui';
+import { InputWithIcon } from '@/components/ui';
 import { updateVendorLocation } from '@/features/auth/api/authApi';
-import { cardClass, inputField, btnPrimary, btnSecondary } from '@/utils/theme';
+import { cardClass, inputField, btnPrimary } from '@/utils/theme';
 import { getInitials } from '@/utils/userUtils';
 
 export default function Profile() {
@@ -13,12 +13,6 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState('');
-  const [pwModal, setPwModal] = useState(false);
-
-  const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
-  const [showPw, setShowPw] = useState({});
-  const [pwError, setPwError] = useState('');
-  const [pwSuccess, setPwSuccess] = useState(false);
 
   const getLocationText = (vendorData) => {
     if (!vendorData) return '';
@@ -165,27 +159,7 @@ export default function Profile() {
     onChange: (e) => setForm((f) => ({ ...f, [name]: e.target.value })),
   });
 
-  const handleChangePassword = () => {
-    if (!pw.current) {
-      setPwError('Enter your current password.');
-      return;
-    }
-    if (pw.next.length < 8) {
-      setPwError('New password must be at least 8 characters.');
-      return;
-    }
-    if (pw.next !== pw.confirm) {
-      setPwError('Passwords do not match.');
-      return;
-    }
-    setPwError('');
-    setPwSuccess(true);
-    setTimeout(() => {
-      setPwSuccess(false);
-      setPwModal(false);
-      setPw({ current: '', next: '', confirm: '' });
-    }, 1500);
-  };
+
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -228,7 +202,7 @@ export default function Profile() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <ProfileField label="Store Name" className="sm:col-span-2">
-            <InputWithIcon icon={Store} {...field('name')} />
+            <InputWithIcon icon={Store} {...field('name')} readOnly className="bg-gray-50/70 cursor-not-allowed opacity-70" />
           </ProfileField>
           <ProfileField label="Email Address" className="sm:col-span-2">
             <InputWithIcon icon={Mail} type="email" {...field('email')} readOnly className="bg-gray-50/70 cursor-not-allowed opacity-70" />
@@ -285,58 +259,10 @@ export default function Profile() {
             <Save className="w-4 h-4 shrink-0" />
             <span>{saving ? 'Updating...' : 'Update Profile'}</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setPwModal(true)}
-            className={`${btnSecondary} flex items-center gap-2`}
-          >
-            <Lock className="w-4 h-4 shrink-0" />
-            <span>Change Password</span>
-          </button>
+
         </div>
       </form>
 
-      <Modal isOpen={pwModal} onClose={() => { setPwModal(false); setPwError(''); }} title="Change Password" size="sm">
-        <div className="space-y-4">
-          {pwSuccess ? (
-            <div className="text-center py-4">
-              <p className="text-sm font-semibold text-emerald-600">Password changed successfully!</p>
-            </div>
-          ) : (
-            <>
-              {pwError && (
-                <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded-lg">
-                  <p className="text-sm text-red-600">{pwError}</p>
-                </div>
-              )}
-              <PwField
-                label="Current Password"
-                value={pw.current}
-                onChange={(v) => setPw((p) => ({ ...p, current: v }))}
-                show={showPw.current}
-                onToggle={() => setShowPw((s) => ({ ...s, current: !s.current }))}
-              />
-              <PwField
-                label="New Password"
-                value={pw.next}
-                onChange={(v) => setPw((p) => ({ ...p, next: v }))}
-                show={showPw.next}
-                onToggle={() => setShowPw((s) => ({ ...s, next: !s.next }))}
-              />
-              <PwField
-                label="Confirm New Password"
-                value={pw.confirm}
-                onChange={(v) => setPw((p) => ({ ...p, confirm: v }))}
-                show={showPw.confirm}
-                onToggle={() => setShowPw((s) => ({ ...s, confirm: !s.confirm }))}
-              />
-              <button onClick={handleChangePassword} className={`${btnPrimary} w-full py-3 mt-2`}>
-                Change Password
-              </button>
-            </>
-          )}
-        </div>
-      </Modal>
     </div>
   );
 }
@@ -350,21 +276,3 @@ function ProfileField({ label, children, className = '' }) {
   );
 }
 
-function PwField({ label, value, onChange, show, onToggle }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</label>
-      <div className="relative">
-        <input
-          type={show ? 'text' : 'password'}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className={`${inputField} pr-10`}
-        />
-        <button type="button" onClick={onToggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-500 transition-colors">
-          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-        </button>
-      </div>
-    </div>
-  );
-}

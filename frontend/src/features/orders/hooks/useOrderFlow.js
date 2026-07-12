@@ -19,7 +19,7 @@ export function useOrderFlow() {
     try {
       const prodRes = await getProduct(productId);
       setProduct(prodRes.data);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load order details');
       setIsOpen(false);
     } finally {

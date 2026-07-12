@@ -7,7 +7,7 @@ import { startConversation } from "../../features/conversations/api/conversation
 import { toast } from "react-toastify";
 import OrderModal from "../../features/orders/components/OrderModal";
 import { dispatchProductOrdered } from "../../utils/orderEvents";
-import { cardClass as sharedCardClass, btnSecondary, btnPrimary } from "../../utils/theme";
+import { cardClass as sharedCardClass } from "../../utils/theme";
 
 export default function UserItemCard({ item }) {
   const navigate = useNavigate();

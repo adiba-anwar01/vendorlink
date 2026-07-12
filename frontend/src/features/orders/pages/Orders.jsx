@@ -8,7 +8,7 @@ import { InputWithIcon, CustomSelect } from "@/components/ui";
 import useAuthStore from "@/features/auth/hooks/useAuthStore";
 import LoginPrompt from "@/features/auth/components/LoginPrompt";
 import { cardClass, btnPrimary } from "@/utils/theme";
-import { getVendorId } from "@/utils/userUtils";
+
 
 const STAT_CARDS = [
   {
@@ -29,8 +29,7 @@ const FILTER_OPTIONS = [
 
 export default function Orders() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const vendor = useAuthStore((s) => s.vendor);
-  const currentVendorId = getVendorId(vendor);
+
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,8 +41,10 @@ export default function Orders() {
   const tableRowHover = "transition-colors hover:bg-gray-50";
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
+    Promise.resolve().then(() => {
+      setLoading(true);
+      setError("");
+    });
     try {
       const res = await getSellerOrders();
       const list = res.data?.orders ?? res.data ?? [];
@@ -53,7 +54,7 @@ export default function Orders() {
     } finally {
       setLoading(false);
     }
-  }, [currentVendorId]);
+  }, []);
 
   async function handleStatusChange(orderId, newStatus) {
     try {
@@ -66,7 +67,7 @@ export default function Orders() {
   }
 
   useEffect(() => {
-    load();
+    setTimeout(() => load(), 0);
   }, [load]);
 
   useEffect(() => {

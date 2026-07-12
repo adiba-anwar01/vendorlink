@@ -26,17 +26,19 @@ import UserItemDetail from "@/features/explore/pages/UserItemDetail";
 
 function AppContent() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const fetchProfile = useAuthStore((state) => state.fetchProfile);
 
   useEffect(() => {
     if (isAuthenticated) {
       const token = localStorage.getItem('token');
       if (token) {
         initializeSocket(token);
+        fetchProfile();
       }
     } else {
       disconnectSocket();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchProfile]);
 
   return (
     <>
