@@ -10,14 +10,13 @@ const {
   getProductById,
   deleteProduct,
   updateProduct,
-  searchNearbyProducts,
+  searchNearbyProducts
 } = require("../controllers/productController");
 
-// Configure multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 10 * 1024 * 1024
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
@@ -25,17 +24,16 @@ const upload = multer({
     } else {
       cb(new Error("Only image files allowed"));
     }
-  },
+  }
 });
 
-// Image upload endpoint
 router.post("/upload", protect, upload.single("image"), uploadImage);
-
 router.post("/", protect, createProduct);
 router.get("/nearby", protect, searchNearbyProducts);
 router.get("/", getProducts);
 router.get("/:id", getProductById);
 router.put("/:id", protect, updateProduct);
 router.delete("/:id", protect, deleteProduct);
+
 
 module.exports = router;

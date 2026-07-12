@@ -5,8 +5,7 @@ const orderSchema = new mongoose.Schema(
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      required: true,
-      unique: true
+      required: true
     },
 
     buyer: {
@@ -53,11 +52,14 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "completed"],
-      default: "pending"
+      enum: ["placed", "completed"],
+      default: "placed"
     }
   },
   { timestamps: true }
 );
+
+// Compound unique index: only one order per buyer per product
+orderSchema.index({ product: 1, buyer: 1 }, { unique: true });
 
 module.exports = mongoose.model("Order", orderSchema);

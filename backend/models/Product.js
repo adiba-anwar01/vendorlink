@@ -5,68 +5,68 @@ const productSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
 
     description: {
       type: String,
-      required: true,
+      required: true
     },
 
     price: {
       type: Number,
       required: true,
-      min: 0,
+      min: 0
     },
 
     category: {
       type: String,
-      required: true,
+      required: true
     },
 
     condition: {
       type: String,
       enum: ["new", "used"],
-      default: "used",
+      default: "used"
     },
 
     images: [
       {
-        type: String,
-      },
+        type: String
+      }
     ],
+
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"]
+      },
+      coordinates: {
+        type: [Number]
+      }
+    },
 
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: true
     },
 
     sellerRole: {
       type: String,
       enum: ["user", "vendor"],
-      required: true,
+      required: true
     },
 
     status: {
       type: String,
       enum: ["open", "sold"],
-      default: "open",
-    },
-
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-      },
-      coordinates: {
-        type: [Number],
-      },
-    },
+      default: "open"
+    }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-productSchema.index({ location: "2dsphere" });
+productSchema.index({ location: "2dsphere" }, { sparse: true });
 
 module.exports = mongoose.model("Product", productSchema);
