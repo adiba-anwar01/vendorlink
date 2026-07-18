@@ -12,7 +12,16 @@
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
 </p>
 
-**VendorLink** is a scalable full-stack **web application** built with the MERN stack that connects users and local vendors through a unified digital marketplace. The platform enables users to discover, buy, sell, and negotiate products while providing vendors with powerful tools to manage listings, orders, and business insights. It features geolocation-based product discovery, real-time messaging, interactive offer negotiation, end-to-end order lifecycle management, secure authentication, a vendor home page, and dedicated analytics. Designed with a modular, feature-based architecture and modern software engineering practices, VendorLink emphasizes scalability, maintainability, performance, and a seamless user experience.
+**VendorLink** is a modern, high-performance web marketplace built with the **MERN** stack. It enables seamless product discovery, location-based exploration of listings, secure buying and selling, and direct buyer-to-seller price negotiations through real-time messaging and offers.
+
+## Key Features
+
+- **🔒 Secure Authentication**: Robust JWT-based sessions with Bcrypt password encryption.
+- **📍 Geolocation-Based Discovery**: Find products and vendors nearby using precise spatial searches (`$near`).
+- **💬 Real-Time Chat & Negotiation**: Seamlessly communicate and send counter-offers in real-time via Socket.IO.
+- **🛍️ End-to-End Order Management**: Streamlined workflows from placing a localized order to final delivery fulfillment.
+- **📊 Vendor Analytics Dashboard**: Track active listings, total sales, and store insights directly from the vendor home page.
+- **⚡ Responsive & Optimized UI**: A fluid, modern single-page experience powered by React, Zustand, and Tailwind CSS.
 
 ## System Architecture
 
@@ -72,7 +81,7 @@ graph LR
 ```
 
 - **Client Layer**: Uses **React** and **Vite** for optimized builds. Global states are isolated inside **Zustand** stores, keeping components decoupled from direct API logic.
-- **Communication Layer**: All REST queries are structured in JSON and secured with authorization tokens. Real-time features use persistent duplex TCP web sockets.
+- **Communication Layer**: REST APIs handle structured JSON data and authenticated requests, while Socket.IO enables real-time, bidirectional communication.
 - **Backend Service Layer**: Express processes controllers, authorizes queries, manages file uploads, and relays images to Cloudinary CDN.
 - **Data Layer**: Powered by **MongoDB** with geospatial indexing (`2dsphere`), storing documents mapped via **Mongoose ODM**.
 
@@ -201,8 +210,8 @@ sequenceDiagram
 ### 4. Transaction Lockout & Fulfillment Sequence
 
 - **Checkout Process**: The seller accepts the final price (updating thread state to `accepted`). The buyer initiates checkout, supplying address and billing details in the `OrderModal`, which submits a POST request to Express.
-- **Order Creation & Lockout**: The backend generates an Order document in MongoDB and updates the corresponding Product status to `sold`. The Express backend emits an `orderUpdated` event via sockets.
-- **Client Freeze Interceptor**: The buyer's browser intercepts `PRODUCT_ORDERED_EVENT` on the window. This updates the local Zustand caches, removing the sold item from the explore list. A closed-deal system notice is appended to the message thread, and all inputs, buttons, and textareas are disabled to lock the conversation.
+- **Order Creation & Lockout**: The backend generates an Order document in MongoDB, updates the corresponding Product status to `sold`, clears any other pending orders, and returns a successful HTTP response.
+- **Client Freeze Interceptor**: Upon a successful order, the buyer's browser dispatches and intercepts a `PRODUCT_ORDERED_EVENT` on the window. This updates the local Zustand caches, removing the sold item from the explore list. A closed-deal system notice is appended to the message thread, and all inputs, buttons, and textareas are disabled to lock the conversation. The seller's interface automatically syncs with the updated 'sold' status on their next data fetch to lock their view as well.
 
 ```mermaid
 sequenceDiagram
@@ -211,20 +220,18 @@ sequenceDiagram
     actor Buyer as Buyer Client
     participant API as Express API Server
     participant DB as MongoDB Database
-    participant WS as Socket.IO Listener
 
     Seller->>Buyer: Accept Offer (Status -> 'accepted')
     Buyer->>API: POST /api/orders/:productId (Delivery details)
     API->>API: Verify token & validate order details
     API->>DB: Save Order Document & Update Product to 'sold'
-    API->>WS: Trigger status update broadcast
-    WS->>Seller: Emit 'orderUpdated'
-    API-->>Buyer: Success response HTTP 200
+    API-->>Buyer: Success response HTTP 201
     
-    Note over Buyer, Seller: Client-Side Event Interceptor Lockout
-    Buyer->>Buyer: Intercept PRODUCT_ORDERED_EVENT
+    Note over Buyer, DB: Client-Side Event Interceptor Lockout
+    Buyer->>Buyer: Dispatch & Intercept PRODUCT_ORDERED_EVENT
     Buyer->>Buyer: Remove item from listings & append closed system message
     Buyer->>Buyer: Disable messaging inputs & freeze bidding UI
+    Seller->>API: Subsequent data fetch (Syncs 'sold' status)
     Seller->>Seller: Update local caches & disable messaging inputs
 ```
 
